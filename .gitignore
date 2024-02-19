@@ -1,2 +1,4 @@
 evals/
 venv/
+models-test/
+generate_data.cpython-*.pyc
