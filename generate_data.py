@@ -11,7 +11,7 @@ def load_model_and_tokenizer(model_name):
 
 def load_t5_model_and_tokenizer(model_name):
     tokenizer = T5Tokenizer.from_pretrained(model_name)
-    model = T5ForConditionalGeneration.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)
+    model = T5ForConditionalGeneration.from_pretrained(model_name)
     return model, tokenizer
 
 def compute_logits(question, model, tokenizer, t5=False):
@@ -26,7 +26,6 @@ def compute_logits(question, model, tokenizer, t5=False):
             outputs = model(input_ids, output_hidden_states=False, decoder_input_ids=decoder_input_ids)
             # generated_ids = model.generate(input_ids, max_length=10, decoder_input_ids=decoder_input_ids)
         else:
- 
             outputs = model(input_ids, output_hidden_states=False)
             # generated_ids = model.generate(input_ids, max_length=100, pad_token_id=tokenizer.eos_token_id)
         # generated_text = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
@@ -46,9 +45,8 @@ def compute_logits(question, model, tokenizer, t5=False):
     # print(f"Logits of the most likely token: {last_token_logits[most_likely_token_id]}")
 
     for answer in ["Yes", "No"]:
-        if t5:
-            answer = answer.lower()
         probs_list[answer] = torch.softmax(last_token_logits, dim=0)[tokenizer.encode(answer)[0]].item()
+        probs_list[answer] += torch.softmax(last_token_logits, dim=0)[tokenizer.encode(answer.lower())[0]].item()
     return probs_list
 
 def generate_data(model_name, questions_file, max_questions=200, t5=False):
@@ -65,7 +63,7 @@ def generate_data(model_name, questions_file, max_questions=200, t5=False):
                 question = obj['question']
                 print(question)
                 if model_name.startswith('Qwen'):
-                    question =  "Answer with yes or no only: " + question
+                    question =  "Answer with either yes or no only: " + question
                 probs = compute_logits(question, model, tokenizer, t5=t5)
                 del obj['question']
                 del obj['answer_not_matching_behavior']
