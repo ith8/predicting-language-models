@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Raw Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Raw Data</h1>
+    <select id="modelSelect" onchange="fetchFiles()">
+        <option>Select a model</option>
+        <!-- Options will be populated here -->
+    </select>
+    <select id="fileSelect" onchange="fetchFileContent()">
+        <option>Select a file</option>
+        <!-- Options will be populated here -->
+    </select>
+    <div id="contentDisplay"></div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

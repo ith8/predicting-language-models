@@ -1,0 +1,44 @@
+/* Base table styles */
+table {
+    width: 100%;
+    border-collapse: collapse; /* Collapse borders */
+    margin: 20px 0; /* Add some margin around the table */
+}
+
+/* Table headers */
+th {
+    background-color: #009879; /* Dark green background */
+    color: #ffffff; /* White text color */
+    text-align: left; /* Align text to the left */
+    padding: 12px 15px; /* Add some padding */
+}
+
+/* Table cells */
+td {
+    padding: 12px 15px; /* Add some padding */
+    border-bottom: 1px solid #dddddd; /* Light grey border for rows */
+}
+
+/* Table rows: hover effect for interactivity */
+tr:hover {
+    background-color: #f5f5f5; /* Light grey background on hover */
+}
+
+/* First row of the table that is not hovered */
+tr:nth-child(even):hover {
+    background-color: #f5f5f5;
+}
+
+/* Zebra striping for rows */
+tr:nth-child(even) {
+    background-color: #f2f2f2; /* Lighter grey for even rows */
+}
+
+/* Responsive Table */
+@media screen and (max-width: 600px) {
+    table {
+        width: 100%;
+        display: block;
+        overflow-x: auto; /* Enable horizontal scrolling on smaller screens */
+    }
+}
