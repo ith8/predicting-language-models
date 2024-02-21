@@ -2,16 +2,9 @@ from flask import Flask, render_template, jsonify, request
 import os
 import json
 
+from generate_graphs import list_directories
+
 app = Flask(__name__)
-
-
-def list_directories(path):
-    """Recursively list all subdirectories under a given path."""
-    dirs = []
-    for root, subdirs, _ in os.walk(path):
-        for subdir in subdirs:
-            dirs.append(os.path.relpath(os.path.join(root, subdir), start=path))
-    return dirs
 
 
 @app.route("/")
@@ -66,4 +59,4 @@ def get_file_content(model, filename):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)  # Change port as needed
+    app.run(debug=True, port=8080)
