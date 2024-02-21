@@ -15,6 +15,7 @@ def list_directories(path):
         for subdir in subdirs:
             if subdir not in ["google", "Qwen"]:
                 dirs.append(os.path.relpath(os.path.join(root, subdir), start=path))
+
         for file in files:
             if file.endswith(".jsonl"):
                 jsonl_files.add(file)
