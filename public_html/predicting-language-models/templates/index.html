@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        header {
+            background-color: #6fb0cc;
+            color: #ffffff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 10px;
+        }
+        nav ul li a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            padding: 20px;
+        }
+        .gallery { display: flex; flex-wrap: wrap; padding: 5px; }
+        .gallery img { margin: 5px; width: 700px; height: auto; } /* Adjust width as needed */
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Predicting Language Models</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/predicting-language-models/raw-data">Display Raw Data</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        
+        <body>
+            <h1>Predicting Language Models</h1>
+            <div class="gallery">
+                <img src="static/images/persona_results.png" alt="Persona Results"> 
+            </div>  
+            <h2>Correlation between models </h2>
+            <div class="gallery">
+                <img src="static/images/all_pairs/average-across-persona_heatmap.png" alt="Correlation between models"> 
+            </div> 
+            <h2>Correlation between model with past response </h2>
+            <div class="gallery">
+                <img src="static/images/n_sample_averages/average-across-persona_heatmap.png" alt="Correlation with past response"> 
+            </div> 
+            <h2>Other graphs</h2>
+                <h3>Correlation between models</h3>
+                    <div class="gallery">
+                        <img src="static/images/all_pairs/agreeableness_heatmap.png" alt="Agreeableness Heatmap">
+                        <img src="static/images/all_pairs/anti-immigration_heatmap.png" alt="Anti-Immigration Heatmap">
+                        <img src="static/images/all_pairs/no-goal-change_heatmap.png" alt="No-Goal-Change Heatmap">
+                        <img src="static/images/all_pairs/openness_heatmap.png" alt="Openness Heatmap">
+                        <img src="static/images/all_pairs/politically-conservative_heatmap.png" alt="Politically Conservative Heatmap">
+                        <img src="static/images/all_pairs/politically-liberal_heatmap.png" alt="Politically Liberal Heatmap">
+                        <img src="static/images/all_pairs/risk-averse_heatmap.png" alt="Risk Averse Heatmap">
+                        <img src="static/images/all_pairs/risk-seeking_heatmap.png" alt="Risk Seeking Heatmap">
+                        <img src="static/images/all_pairs/self-replication_heatmap.png" alt="Self-Replication Heatmap">
+                        <img src="static/images/all_pairs/average-across-persona_heatmap.png" alt="Correlation between models"> 
+                    </div>
+
+                <h3>Correlation between model with past response</h3>
+                <div class="gallery">
+                    <img src="static/images/n_sample_averages/agreeableness_heatmap.png" alt="Agreeableness Heatmap N Sample">
+                    <img src="static/images/n_sample_averages/anti-immigration_heatmap.png" alt="Anti-Immigration Heatmap N Sample">
+                    <img src="static/images/n_sample_averages/no-goal-change_heatmap.png" alt="No-Goal-Change Heatmap N Sample">
+                    <img src="static/images/n_sample_averages/openness_heatmap.png" alt="Openness Heatmap N Sample">
+                    <img src="static/images/n_sample_averages/politically-conservative_heatmap.png" alt="Politically Conservative Heatmap N Sample">
+                    <img src="static/images/n_sample_averages/politically-liberal_heatmap.png" alt="Politically Liberal Heatmap N Sample">
+                    <img src="static/images/n_sample_averages/risk-averse_heatmap.png" alt="Risk Averse Heatmap N Sample">
+                    <img src="static/images/n_sample_averages/risk-seeking_heatmap.png" alt="Risk Seeking Heatmap N Sample">
+                    <img src="static/images/n_sample_averages/self-replication_heatmap.png" alt="Self-Replication Heatmap N Sample">
+                    <img src="static/images/n_sample_averages/average-across-persona_heatmap.png" alt="Correlation with past response"> 
+                </div>
+        </body>
+    </div>
+</body>
+</html>

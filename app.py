@@ -4,23 +4,26 @@ import json
 
 from generate_graphs import list_directories
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="public_html/predicting-language-models/templates", static_folder="public_html/predicting-language-models/static")
 
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+@app.route('/predicting-language-models')
+def home():
+    return render_template('index.html')
 
 
-@app.route("/raw-data")
+@app.route("/predicting-language-models/raw-data")
 def raw_data():
     return render_template("raw_data.html")
 
+@app.route("/predicting-language-models/graphs")
+def graphs():
+    return render_template("graphs.html")
 
 @app.route("/models")
 def get_models():
     models_path = "models"
-    models = list_directories(models_path)
+    models, _ = list_directories(models_path)
 
     models = [model for model in models if model not in ["google", "Qwen"]]
     return jsonify(models)

@@ -14,6 +14,12 @@ MODEL_ORDER = [
     "Qwen1.5-1.8B-Chat",
     "Qwen1.5-7B-Chat",
 ]
+TARGET_DIR = "public_html/predicting-language-models/static/images"
+
+plt.rcParams['axes.labelsize'] = 16  
+plt.rcParams['xtick.labelsize'] = 14  
+plt.rcParams['ytick.labelsize'] = 14 
+plt.rcParams['legend.fontsize'] = 12  
 
 
 def list_directories(path):
@@ -83,10 +89,9 @@ def n_sample_averages(model_persona_data, n):
         indices.remove(i)
 
         sampled_indices = np.random.choice(indices, n, replace=False)
-        sampled_probs = [
+        avg_prob = np.mean([
             extract_prob(model_persona_data[idx]) for idx in sampled_indices
-        ]
-        avg_prob = np.mean(sampled_probs)
+        ])
         average_prob_list.append(avg_prob)
         model_prob_list.append(extract_prob(model_persona_data[i]))
 
@@ -103,11 +108,11 @@ def compute_correlations_with_sampled_averages():
             file_path = os.path.join("models/", model_name, persona_data_file_name)
             model_persona_data = load_file_contents(file_path)
 
-            for num_samples in [10, 20, 30]:
+            for num_samples in [3, 6, 15]:
                 model_probs_list, avg_probs_list = n_sample_averages(
                     model_persona_data, num_samples
                 )
-                correlations[model_name.split("/")[-1], f"{num_samples}_samples"], _ = (
+                correlations[model_name.split("/")[-1], num_samples], _ = (
                     pearsonr(model_probs_list, avg_probs_list)
                 )
 
@@ -135,7 +140,7 @@ def generate_average_heatmap(all_correlations, save_path):
         for pair, values in aggregated_correlations.items()
     }
 
-    graph_heatmap_and_save(average_correlations, "average_persona", save_path)
+    graph_heatmap_and_save(average_correlations, "average-across-persona", save_path)
 
 
 def graph_heatmap_and_save(correlations, persona, save_path):
@@ -154,7 +159,7 @@ def graph_heatmap_and_save(correlations, persona, save_path):
         if not graph_averages:
             corr_matrix.at[model2, model1] = value
 
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(14, 12))
     cmap = sns.diverging_palette(10, 133, as_cmap=True)
     sns.heatmap(
         corr_matrix,
@@ -167,7 +172,11 @@ def graph_heatmap_and_save(correlations, persona, save_path):
         linewidths=0.5,
         cbar=True,
     )
-    plt.title(f"{persona} model correlation")
+    plt.xticks(rotation=35)
+    plt.yticks(rotation=35)
+    plt.title(persona,  fontsize=25, fontweight='bold', pad=30)
+    if graph_averages:
+        plt.xlabel("Number of samples", fontsize=20)
 
     file_path = os.path.join(save_path, f"{persona}_heatmap.png")
     plt.savefig(file_path)
@@ -208,7 +217,7 @@ def plot_persona_results(base_path="models/"):
         "Qwen1.5-7B-Chat": "darkgreen",
     }
 
-    plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(12, 10))
     ax = sns.scatterplot(
         data=df,
         x="Average Probability",
@@ -232,29 +241,29 @@ def plot_persona_results(base_path="models/"):
     plt.axvline(0.5, color="black", linestyle="--", linewidth=1)
     plt.xlim(0, 1)
 
-    plt.xlabel("% Answers Matching Behavior")
-    plt.ylabel("Behavior")
+    plt.xlabel("% Answers Matching Behavior", fontsize=20)
+    plt.ylabel("Behavior", fontsize=20)
     plt.grid(True, which="both", linestyle="--", linewidth=0.5)
     plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left", title="Model")
     plt.tight_layout()
     plt.tight_layout()
 
-    plt.savefig("assets/persona_results.png")
+    plt.savefig(f"{TARGET_DIR}/persona_results.png")
     plt.close()
 
 if __name__ == "__main__":
     plot_persona_results()
 
     generate_all_pairs_heatmaps(
-        compute_all_pairs_correlations(), save_path="assets/all_pairs/"
+        compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
     )
     generate_average_heatmap(
-        compute_all_pairs_correlations(), save_path="assets/all_pairs/"
+        compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
     )
 
     generate_all_pairs_heatmaps(
-        compute_correlations_with_sampled_averages(), save_path="assets/n_sample_averages/"
+        compute_correlations_with_sampled_averages(), save_path=f"{TARGET_DIR}/n_sample_averages/"
     )
     generate_average_heatmap(
-        compute_correlations_with_sampled_averages(), save_path="assets/n_sample_averages/"
+        compute_correlations_with_sampled_averages(), save_path=f"{TARGET_DIR}/n_sample_averages/"
     )
