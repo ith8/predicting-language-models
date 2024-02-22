@@ -1,4 +1,3 @@
-/* Base table styles */
 table {
     width: 100%;
     border-collapse: collapse; /* Collapse borders */
@@ -42,3 +41,55 @@ tr:nth-child(even) {
         overflow-x: auto; /* Enable horizontal scrolling on smaller screens */
     }
 }
+
+
+body {
+    font-family: 'Arial', sans-serif;
+    font-size: 18px;
+    margin: 100px;
+    padding: 20px;
+    background-color: #f0f2f5;
+    color: #333;
+}
+footer {
+    background-color: #6fb0cc;
+    color: #ffffff;
+    padding: 20px 0;
+    text-align: center;
+}
+header {
+    background-color: #6fb0cc;
+    color: #ffffff;
+    padding: 20px 0;
+    text-align: center;
+}
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+nav ul li a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+nav ul li a:hover {
+    text-decoration: underline;
+}
+.container {
+    padding: 20px;
+}
+.gallery { display: flex; flex-wrap: wrap; padding: 5px; }
+.gallery img { margin: 5px; width: 700px; height: auto; } 
+div {
+    word-wrap: break-word;
+}
+.gallery2 { display: flex; flex-wrap: wrap; padding: 5px; }
+.gallery2 img { margin: 5px; width: 500px; height: auto; } 
+div {
+    word-wrap: break-word;
+}
+
