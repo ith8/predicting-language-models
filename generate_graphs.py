@@ -1,11 +1,19 @@
 from collections import defaultdict
 import os
 import json
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, t
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+
+MODEL_ORDER = [
+    "flan-t5-small",
+    "flan-t5-large",
+    "flan-t5-xl",
+    "Qwen1.5-1.8B-Chat",
+    "Qwen1.5-7B-Chat",
+]
 
 
 def list_directories(path):
@@ -135,13 +143,7 @@ def graph_heatmap_and_save(correlations, persona, save_path):
     os.makedirs(save_path, exist_ok=True)
 
     columns = sorted(set([pair[1] for pair in correlations.keys()]))
-    index = [
-        "flan-t5-small",
-        "flan-t5-large",
-        "flan-t5-xl",
-        "Qwen1.5-1.8B-Chat",
-        "Qwen1.5-7B-Chat",
-    ]
+    index = MODEL_ORDER
 
     corr_matrix = pd.DataFrame(
         index=index, columns=columns if graph_averages else index, data=np.nan
@@ -172,16 +174,87 @@ def graph_heatmap_and_save(correlations, persona, save_path):
     plt.close()
 
 
-generate_all_pairs_heatmaps(
-    compute_all_pairs_correlations(), save_path="assets/all_pairs/"
-)
-generate_average_heatmap(
-    compute_all_pairs_correlations(), save_path="assets/all_pairs/"
-)
+def plot_persona_results(base_path="models/"):
+    model_dirs, jsonl_files = list_directories(base_path)
+    persona_averages = []
 
-generate_all_pairs_heatmaps(
-    compute_correlations_with_sampled_averages(), save_path="assets/n_sample_averages/"
-)
-generate_average_heatmap(
-    compute_correlations_with_sampled_averages(), save_path="assets/n_sample_averages/"
-)
+    for model_dir in model_dirs:
+        for jsonl_file in jsonl_files:
+            file_path = os.path.join(base_path, model_dir, jsonl_file)
+            if os.path.exists(file_path):
+                questions_data = load_file_contents(file_path)
+                prob_list = [extract_prob(data) for data in questions_data]
+                avg_prob = np.mean(prob_list)
+
+                std_error = np.std(prob_list) / np.sqrt(len(prob_list))
+                margin_of_error = std_error * t.ppf(0.975, len(prob_list) - 1)
+
+                persona_averages.append(
+                    {
+                        "Model": model_dir.split("/")[-1],
+                        "Persona": os.path.splitext(jsonl_file)[0],
+                        "Average Probability": avg_prob,
+                        "Margin of Error": margin_of_error,
+                    }
+                )
+
+    df = pd.DataFrame(persona_averages).sort_values(by="Persona")
+
+    palette = {
+        "flan-t5-large": "blue",
+        "flan-t5-small": "skyblue",
+        "flan-t5-xl": "blueviolet",
+        "Qwen1.5-1.8B-Chat": "lightgreen",
+        "Qwen1.5-7B-Chat": "darkgreen",
+    }
+
+    plt.figure(figsize=(10, 8))
+    ax = sns.scatterplot(
+        data=df,
+        x="Average Probability",
+        y="Persona",
+        hue="Model",
+        hue_order=MODEL_ORDER,
+        palette=palette,
+        s=200,
+        alpha=0.6,
+    )
+    for _, row in df.iterrows():
+        ax.errorbar(
+            x=row["Average Probability"],
+            y=row["Persona"],
+            xerr=row["Margin of Error"],
+            fmt="none",
+            color="black",
+            capsize=2,
+            alpha=0.5,
+        )
+    plt.axvline(0.5, color="black", linestyle="--", linewidth=1)
+    plt.xlim(0, 1)
+
+    plt.xlabel("% Answers Matching Behavior")
+    plt.ylabel("Behavior")
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left", title="Model")
+    plt.tight_layout()
+    plt.tight_layout()
+
+    plt.savefig("assets/persona_results.png")
+    plt.close()
+
+if __name__ == "__main__":
+    plot_persona_results()
+
+    generate_all_pairs_heatmaps(
+        compute_all_pairs_correlations(), save_path="assets/all_pairs/"
+    )
+    generate_average_heatmap(
+        compute_all_pairs_correlations(), save_path="assets/all_pairs/"
+    )
+
+    generate_all_pairs_heatmaps(
+        compute_correlations_with_sampled_averages(), save_path="assets/n_sample_averages/"
+    )
+    generate_average_heatmap(
+        compute_correlations_with_sampled_averages(), save_path="assets/n_sample_averages/"
+    )
