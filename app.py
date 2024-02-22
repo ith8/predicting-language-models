@@ -6,17 +6,17 @@ from generate_graphs import list_directories
 
 app = Flask(
     __name__,
-    template_folder="public_html/predicting-language-models/templates",
-    static_folder="public_html/predicting-language-models/static",
+    template_folder="templates",
+    static_folder="static",
 )
 
 
-@app.route("/predicting-language-models")
+@app.route("/")
 def home():
     return render_template("index.html")
 
 
-@app.route("/predicting-language-models/raw-data")
+@app.route("/raw-data")
 def raw_data():
     return render_template("raw_data.html")
 

@@ -14,7 +14,7 @@ MODEL_ORDER = [
     "Qwen1.5-1.8B-Chat",
     "Qwen1.5-7B-Chat",
 ]
-TARGET_DIR = "public_html/predicting-language-models/static/images"
+TARGET_DIR = "static/images"
 
 plt.rcParams["axes.labelsize"] = 20
 plt.rcParams["xtick.labelsize"] = 14
