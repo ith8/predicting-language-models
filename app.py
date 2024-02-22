@@ -4,21 +4,22 @@ import json
 
 from generate_graphs import list_directories
 
-app = Flask(__name__, template_folder="public_html/predicting-language-models/templates", static_folder="public_html/predicting-language-models/static")
+app = Flask(
+    __name__,
+    template_folder="public_html/predicting-language-models/templates",
+    static_folder="public_html/predicting-language-models/static",
+)
 
 
-@app.route('/predicting-language-models')
+@app.route("/predicting-language-models")
 def home():
-    return render_template('index.html')
+    return render_template("index.html")
 
 
 @app.route("/predicting-language-models/raw-data")
 def raw_data():
     return render_template("raw_data.html")
 
-@app.route("/predicting-language-models/graphs")
-def graphs():
-    return render_template("graphs.html")
 
 @app.route("/models")
 def get_models():

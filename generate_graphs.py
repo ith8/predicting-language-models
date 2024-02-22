@@ -1,7 +1,7 @@
 from collections import defaultdict
+from scipy.stats import pearsonr, t
 import os
 import json
-from scipy.stats import pearsonr, t
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -16,10 +16,10 @@ MODEL_ORDER = [
 ]
 TARGET_DIR = "public_html/predicting-language-models/static/images"
 
-plt.rcParams['axes.labelsize'] = 16  
-plt.rcParams['xtick.labelsize'] = 14  
-plt.rcParams['ytick.labelsize'] = 14 
-plt.rcParams['legend.fontsize'] = 12  
+plt.rcParams["axes.labelsize"] = 20
+plt.rcParams["xtick.labelsize"] = 14
+plt.rcParams["ytick.labelsize"] = 14
+plt.rcParams["legend.fontsize"] = 12
 
 
 def list_directories(path):
@@ -81,24 +81,24 @@ def compute_all_pairs_correlations():
     return persona_correlations
 
 
-def n_sample_averages(model_persona_data, n):
+def sample_response_probs(model_persona_data, num_samples):
     num_questions = len(model_persona_data)
     average_prob_list, model_prob_list = [], []
     for i in range(num_questions):
         indices = list(range(num_questions))
         indices.remove(i)
 
-        sampled_indices = np.random.choice(indices, n, replace=False)
-        avg_prob = np.mean([
-            extract_prob(model_persona_data[idx]) for idx in sampled_indices
-        ])
+        sampled_indices = np.random.choice(indices, num_samples, replace=False)
+        avg_prob = np.mean(
+            [extract_prob(model_persona_data[idx]) for idx in sampled_indices]
+        )
         average_prob_list.append(avg_prob)
         model_prob_list.append(extract_prob(model_persona_data[i]))
 
     return model_prob_list, average_prob_list
 
 
-def compute_correlations_with_sampled_averages():
+def compute_correlations_with_sampled_responses():
     model_dirs, jsonl_files = list_directories("models/")
     persona_correlations = {}
 
@@ -109,11 +109,11 @@ def compute_correlations_with_sampled_averages():
             model_persona_data = load_file_contents(file_path)
 
             for num_samples in [3, 6, 15]:
-                model_probs_list, avg_probs_list = n_sample_averages(
+                model_probs_list, avg_probs_list = sample_response_probs(
                     model_persona_data, num_samples
                 )
-                correlations[model_name.split("/")[-1], num_samples], _ = (
-                    pearsonr(model_probs_list, avg_probs_list)
+                correlations[model_name.split("/")[-1], num_samples], _ = pearsonr(
+                    model_probs_list, avg_probs_list
                 )
 
         persona_correlations[persona_data_file_name] = correlations
@@ -124,10 +124,10 @@ def compute_correlations_with_sampled_averages():
 def generate_all_pairs_heatmaps(all_correlations, save_path):
     for persona_data_file_name, correlations in all_correlations.items():
         persona = persona_data_file_name.replace(".jsonl", "")
-        graph_heatmap_and_save(correlations, persona, save_path)
+        plot_heatmap(correlations, persona, save_path)
 
 
-def generate_average_heatmap(all_correlations, save_path):
+def generate_aggregate_heatmap(all_correlations, save_path):
     aggregated_correlations = defaultdict(list)
     count_files = 0
     for file_correlations in all_correlations.values():
@@ -140,10 +140,10 @@ def generate_average_heatmap(all_correlations, save_path):
         for pair, values in aggregated_correlations.items()
     }
 
-    graph_heatmap_and_save(average_correlations, "average-across-persona", save_path)
+    plot_heatmap(average_correlations, "average-across-persona", save_path)
 
 
-def graph_heatmap_and_save(correlations, persona, save_path):
+def plot_heatmap(correlations, persona, save_path):
     graph_averages = "sample" in save_path
     os.makedirs(save_path, exist_ok=True)
 
@@ -174,9 +174,7 @@ def graph_heatmap_and_save(correlations, persona, save_path):
     )
     plt.xticks(rotation=35)
     plt.yticks(rotation=35)
-    plt.title(persona,  fontsize=25, fontweight='bold', pad=30)
-    if graph_averages:
-        plt.xlabel("Number of samples", fontsize=20)
+    plt.title(persona, fontsize=25, fontweight="bold", pad=30)
 
     file_path = os.path.join(save_path, f"{persona}_heatmap.png")
     plt.savefig(file_path)
@@ -194,7 +192,6 @@ def plot_persona_results(base_path="models/"):
                 questions_data = load_file_contents(file_path)
                 prob_list = [extract_prob(data) for data in questions_data]
                 avg_prob = np.mean(prob_list)
-
                 std_error = np.std(prob_list) / np.sqrt(len(prob_list))
                 margin_of_error = std_error * t.ppf(0.975, len(prob_list) - 1)
 
@@ -240,9 +237,8 @@ def plot_persona_results(base_path="models/"):
         )
     plt.axvline(0.5, color="black", linestyle="--", linewidth=1)
     plt.xlim(0, 1)
-
-    plt.xlabel("% Answers Matching Behavior", fontsize=20)
-    plt.ylabel("Behavior", fontsize=20)
+    plt.xlabel("% Answers Matching Behavior")
+    plt.ylabel("Behavior")
     plt.grid(True, which="both", linestyle="--", linewidth=0.5)
     plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left", title="Model")
     plt.tight_layout()
@@ -251,19 +247,22 @@ def plot_persona_results(base_path="models/"):
     plt.savefig(f"{TARGET_DIR}/persona_results.png")
     plt.close()
 
+
 if __name__ == "__main__":
     plot_persona_results()
 
     generate_all_pairs_heatmaps(
         compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
     )
-    generate_average_heatmap(
+    generate_aggregate_heatmap(
         compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
     )
 
     generate_all_pairs_heatmaps(
-        compute_correlations_with_sampled_averages(), save_path=f"{TARGET_DIR}/n_sample_averages/"
+        compute_correlations_with_sampled_responses(),
+        save_path=f"{TARGET_DIR}/n_sample_averages/",
     )
-    generate_average_heatmap(
-        compute_correlations_with_sampled_averages(), save_path=f"{TARGET_DIR}/n_sample_averages/"
+    generate_aggregate_heatmap(
+        compute_correlations_with_sampled_responses(),
+        save_path=f"{TARGET_DIR}/n_sample_averages/",
     )
