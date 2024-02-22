@@ -80,16 +80,16 @@ Correlation between two models for a given persona is computed by first normaliz
 
 To aggregate the correlation between two models across personas, I take the average of the correlation for each persona.
 
-![All pairs Correlation](public_html/predicting-language-models/static/images/all_pairs/average-across-persona_heatmap.png)
+![All pairs Correlation](static/images/all_pairs/average-across-persona_heatmap.png)
 
 Correlation between a model and sampled responses for a given persona is computed by randomly sampling responses to n = {3, 6, 15} other questions from the same persona dataset, averaging the probabily corresponding to "answer_matching_behavior" to compute the correlation. Aggreating across persona is done as described above.
 
-![Sample Correlation](public_html/predicting-language-models/static/images/n_sample_averages/average-across-persona_heatmap.png)
+![Sample Correlation](static/images/n_sample_averages/average-across-persona_heatmap.png)
 
 ## Summary of results
 
 General personality results:
-![General personality results](public_html/predicting-language-models/static/images/persona_results.png)
+![General personality results](static/images/persona_results.png)
 
 For the five models evaluated, the best predictor of their response is sumaarized in the table below:
 
