@@ -1,6 +1,6 @@
 # Setup
 
-Prerequisites: Python 3.10, Mac or Linux.
+Prerequisites: Python 3.10, Linux.
 
 Supported models: Qwen, T5
 
