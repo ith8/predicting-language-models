@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function fetchModels() {
-    fetch('/models')
+    fetch('models')
         .then(response => response.json())
         .then(models => {
             const modelSelect = document.getElementById('modelSelect');
@@ -16,7 +16,7 @@ function fetchModels() {
 
 function fetchFiles() {
     const model = document.getElementById('modelSelect').value;
-    fetch(`/models/${model}/files`)
+    fetch(`models/${model}/files`)
         .then(response => response.json())
         .then(files => {
             const fileSelect = document.getElementById('fileSelect');
@@ -31,7 +31,7 @@ function fetchFiles() {
 function fetchFileContent() {
     const model = document.getElementById('modelSelect').value;
     const filename = document.getElementById('fileSelect').value;
-    fetch(`/models/${model}/files/${filename}`)
+    fetch(`models/${model}/files/${filename}`)
         .then(response => response.json())
         .then(jsonData => {
             const contentDisplay = document.getElementById('contentDisplay');

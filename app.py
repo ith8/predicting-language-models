@@ -10,6 +10,7 @@ app = Flask(
     static_folder="static",
 )
 
+MODELS_PATH = "models" if not os.environ.get("MODELS_PATH") else os.environ.get("MODELS_PATH")
 
 @app.route("/")
 def home():
@@ -23,8 +24,7 @@ def raw_data():
 
 @app.route("/models")
 def get_models():
-    models_path = "models"
-    models, _ = list_directories(models_path)
+    models, _ = list_directories(MODELS_PATH)
 
     models = [model for model in models if model not in ["google", "Qwen"]]
     return jsonify(models)
@@ -32,7 +32,7 @@ def get_models():
 
 @app.route("/models/<path:model>/files")
 def get_files(model):
-    files_path = os.path.join("models", model)
+    files_path = os.path.join(MODELS_PATH, model)
     files = [
         f for f in os.listdir(files_path) if os.path.isfile(os.path.join(files_path, f))
     ]
@@ -41,7 +41,7 @@ def get_files(model):
 
 @app.route("/models/<path:model>/files/<filename>")
 def get_file_content(model, filename):
-    file_path = os.path.join("models", model, filename)
+    file_path = os.path.join(MODELS_PATH, model, filename)
     if os.path.exists(file_path):
         content = []
         with open(file_path, "r") as file:
