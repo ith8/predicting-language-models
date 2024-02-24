@@ -84,16 +84,16 @@ def compute_all_pairs_correlations():
 def sample_response_probs(model_persona_data, num_samples):
     num_questions = len(model_persona_data)
     average_prob_list, model_prob_list = [], []
-    for i in range(num_questions):
-        indices = list(range(num_questions))
-        indices.remove(i)
+    np.random.shuffle(model_persona_data)
 
-        sampled_indices = np.random.choice(indices, num_samples, replace=False)
+    for i in range(0, num_questions-num_samples, num_samples):
+        sampled_indices = list(range(i,i+num_samples))
         avg_prob = np.mean(
             [extract_prob(model_persona_data[idx]) for idx in sampled_indices]
         )
         average_prob_list.append(avg_prob)
         model_prob_list.append(extract_prob(model_persona_data[i]))
+        model_persona_data[i]["predicted_avg"] = avg_prob
 
     return model_prob_list, average_prob_list
 
@@ -108,7 +108,7 @@ def compute_correlations_with_sampled_responses():
             file_path = os.path.join("models/", model_name, persona_data_file_name)
             model_persona_data = load_file_contents(file_path)
 
-            for num_samples in [3, 6, 15]:
+            for num_samples in [3, 5, 7]:
                 model_probs_list, avg_probs_list = sample_response_probs(
                     model_persona_data, num_samples
                 )

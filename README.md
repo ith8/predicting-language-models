@@ -82,7 +82,7 @@ To aggregate the correlation between two models across personas, I take the aver
 
 ![All pairs Correlation](static/images/all_pairs/average-across-persona_heatmap.png)
 
-Correlation between a model and sampled responses for a given persona is computed by randomly sampling responses to n = {3, 6, 15} other questions from the same persona dataset, averaging the probabily corresponding to "answer_matching_behavior" to compute the correlation. Aggreating across persona is done as described above.
+Correlation between a model and sampled responses for a given persona is computed by randomly sampling responses to n other questions from the same persona dataset, averaging the probabily corresponding to "answer_matching_behavior" to compute the correlation. Aggreating across persona is done as described above.
 
 ![Sample Correlation](static/images/n_sample_averages/average-across-persona_heatmap.png)
 
@@ -95,10 +95,10 @@ For the five models evaluated, the best predictor of their response is sumaarize
 
 Model | Best Predictors | 2nd | 3rd | 4th | 5th
 --- | --- | --- | --- | --- | --- |
-Qwen1.5-1.8B-Chat | Qwen1.5-7B-Chat | flan-t5-xl | flan-t5-large | sampled-response | flan-t5-small
-Qwen1.5-7B-Chat | flan-t5-xl | Qwen1.5-1.8B-Chat | flan-t5-large | sampled-response | flan-t5-small
-flan-t5-small | flan-t5-large | sampled-response | flan-t5-xl | Qwen1.5-8B-Chat | Qwen1.5-1.8B-Chat
-flan-t5-large | flan-t5-xl | Qwen1.5-7B-Chat | Qwen1.5-1.8B-Chat | flan-t5-small | sampled-response
-flan-t5-xl | flan-t5-large | Qwen1.5-7B-Chat | Qwen1.5-1.8B-Chat | flan-t5-small | sampled-response
+Qwen1.5-1.8B-Chat | Qwen1.5-7B-Chat | flan-t5-xl | flan-t5-large  | flan-t5-small
+Qwen1.5-7B-Chat | flan-t5-xl | Qwen1.5-1.8B-Chat | flan-t5-large  | flan-t5-small
+flan-t5-small | flan-t5-large  | flan-t5-xl | Qwen1.5-8B-Chat | Qwen1.5-1.8B-Chat
+flan-t5-large | flan-t5-xl | Qwen1.5-7B-Chat | Qwen1.5-1.8B-Chat | flan-t5-small 
+flan-t5-xl | flan-t5-large | Qwen1.5-7B-Chat | Qwen1.5-1.8B-Chat | flan-t5-small 
 
 
