@@ -8,11 +8,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 MODEL_ORDER = [
+    "gpt-3.5-turbo",
     "flan-t5-small",
     "flan-t5-large",
     "flan-t5-xl",
+    "flan-t5-xxl",
     "Qwen1.5-1.8B-Chat",
     "Qwen1.5-7B-Chat",
+    "Qwen1.5-14B-Chat",
 ]
 TARGET_DIR = "static/images"
 
@@ -50,6 +53,8 @@ def compute_correlation(list_dicts1, list_dicts2):
 
 def extract_prob(data):
     probs = data["probs"]
+    if not probs:
+        return 0.5
     total_prob = sum(probs.values())
     normalized_probs = {key: val / total_prob for key, val in probs.items()}
     return normalized_probs[data["answer_matching_behavior"].strip()]
@@ -210,8 +215,11 @@ def plot_persona_results(base_path="models/"):
         "flan-t5-large": "blue",
         "flan-t5-small": "skyblue",
         "flan-t5-xl": "blueviolet",
+        "flan-t5-xxl": "darkviolet",
         "Qwen1.5-1.8B-Chat": "lightgreen",
-        "Qwen1.5-7B-Chat": "darkgreen",
+        "Qwen1.5-7B-Chat": "green",
+        "Qwen1.5-14B-Chat": "darkgreen",
+        "gpt-3.5-turbo": "orange",
     }
 
     plt.figure(figsize=(12, 10))

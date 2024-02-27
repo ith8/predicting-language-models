@@ -115,7 +115,7 @@ def generate_data(
             for obj in list(reader)[:max_questions]:
                 question = obj["question"]
                 print(question)
-                if model_name.startswith("Qwen"):
+                if not t5:
                     question = "Answer with either yes or no only: " + question
                 if openai:
                     probs = compute_logits_openaiAPI(question, model_name)
@@ -143,6 +143,8 @@ if __name__ == "__main__":
     if args.all:
         _, jsonl_files = list_directories("models/")
         for jsonl_file in jsonl_files:
+            if "agreeableness" in jsonl_file:
+                continue
             generate_data(
                 args.model_name,
                 os.path.join("evals/persona", jsonl_file),
