@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 from generate_graphs import list_directories
 import jsonlines
