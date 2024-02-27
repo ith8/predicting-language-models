@@ -1,5 +1,6 @@
 import argparse
 import os
+from generate_graphs import list_directories
 import jsonlines
 import torch
 from transformers import (
@@ -94,9 +95,15 @@ def parse_args():
     parser.add_argument("--questions_file", type=str, help="questions file")
     parser.add_argument("--max_questions", default=200, type=int, help="max questions")
     parser.add_argument("--t5", type=bool, default=False, help="t5 model")
+    parser.add_argument("--all", type=bool, default=False, help="all personas")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    generate_data(args.model_name, args.questions_file, args.max_questions, args.t5)
+    if args.all:
+        _, jsonl_files = list_directories("models/")
+        for jsonl_file in jsonl_files:
+            generate_data(args.model_name, os.path.join("evals/persona", jsonl_file), args.max_questions, args.t5)
+    else:
+        generate_data(args.model_name, args.questions_file, args.max_questions, args.t5)
