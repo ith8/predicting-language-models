@@ -1,9 +1,11 @@
 import argparse
+import json
 import os
 from generate_graphs import list_directories
 import jsonlines
 import torch
 import openai
+import numpy as np
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -70,31 +72,32 @@ def compute_logits(question, model, tokenizer, t5=False):
     return probs_list
 
 
-def compute_logits_with_openai(question, model_name):
+def compute_logits_openaiAPI(question, model_name):
     probs_list = {}
-    client = OpenAI()
+    client = openai.OpenAI()
     response = client.chat.completions.create(
         model=model_name,
         messages=[{"role": "user", "content": question}],
         max_tokens=1,
         logprobs=True,
+        top_logprobs=5,
     )
 
-    # Extract the logprobs for the most likely next token
-    print(response.logprobs)
-    # print shape of logpbrobs
-    print(response.choices[0].logprobs.shape)
-    print(logprobs.shape)
+    top_logprobs = response.choices[0].logprobs.content[0].top_logprobs
+    top_completion = {
+        log_prob.token: np.exp(log_prob.logprob) for log_prob in top_logprobs
+    }
 
-    logprobs = response.choices[0].logprobs.top_logprobs[0]
-
-    # Assuming "Yes" and "No" are among the tokens you want probabilities for
     for answer in ["Yes", "No"]:
-        # Aggregate probabilities for "Yes" and "yes", "No" and "no" etc.
-        probs_list[answer] = sum(
-            [logprobs.get(answer_case, 0) for answer_case in [answer, answer.lower()]]
+        probs_list[answer] = top_completion.get(answer, 0) + top_completion.get(
+            answer.lower(), 0
         )
+        if probs_list[answer] == 0:
+            probs_list[answer] = min(top_completion.values()) / 2
+    if probs_list["Yes"] == probs_list["No"]:
+        return None
 
+    print(top_completion)
     return probs_list
 
 
@@ -103,7 +106,7 @@ def generate_data(
 ):
     if t5:
         model, tokenizer = load_t5_model_and_tokenizer(model_name)
-    else:
+    elif not openai:
         model, tokenizer = load_model_and_tokenizer(model_name)
 
     result_file_name = f"models/{model_name}/{os.path.basename(questions_file)}"
@@ -116,7 +119,7 @@ def generate_data(
                 if model_name.startswith("Qwen"):
                     question = "Answer with either yes or no only: " + question
                 if openai:
-                    probs = compute_logits_with_openai(question, model_name)
+                    probs = compute_logits_openaiAPI(question, model_name)
                 else:
                     probs = compute_logits(question, model, tokenizer, t5=t5)
                 del obj["question"]
@@ -138,10 +141,21 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    # if args.all:
-    #     _, jsonl_files = list_directories("models/")
-    #     for jsonl_file in jsonl_files:
-    #         generate_data(args.model_name, os.path.join("evals/persona", jsonl_file), args.max_questions, args.t5)
-    # else:
-    #     generate_data(args.model_name, args.questions_file, args.max_questions, args.t5)
-    generate_data(args.model_name, args.questions_file, 1, args.t5, args.openai)
+    if args.all:
+        _, jsonl_files = list_directories("models/")
+        for jsonl_file in jsonl_files:
+            generate_data(
+                args.model_name,
+                os.path.join("evals/persona", jsonl_file),
+                args.max_questions,
+                args.t5,
+                args.openai,
+            )
+    else:
+        generate_data(
+            args.model_name,
+            args.questions_file,
+            args.max_questions,
+            args.t5,
+            args.openai,
+        )
