@@ -42,11 +42,15 @@ python generate_graphs.py
 # Overview 
 
 This project evaluate the response of the following models:
+- gpt-3.5-turbo
+- gpt-4-turbo (gpt-4-1106-preview)
 - [Qwen1.5-1.8B-Chat](https://huggingface.co/Qwen/Qwen1.5-1.8B-Chat) (1.8B parameters)
 - [Qwen1.5-7B-Chat](https://huggingface.co/Qwen/Qwen1.5-7B-Chat) (7B parameters)
-- [google/flan-t5-small](https://huggingface.co/google/flan-t5-small) (77M parameters)
-- [google/flan-t5-large](https://huggingface.co/google/flan-t5-large) (783M parameters)
-- [google/flan-t5-xl](https://huggingface.co/google/flan-t5-xl) (2.85B parameters)
+- [Qwen1.5-14B-Chat](https://huggingface.co/Qwen/Qwen1.5-14B-Chat) (14B parameters)
+- [flan-t5-small](https://huggingface.co/google/flan-t5-small) (77M parameters)
+- [flan-t5-large](https://huggingface.co/google/flan-t5-large) (783M parameters)
+- [flan-t5-xl](https://huggingface.co/google/flan-t5-xl) (2.85B parameters)
+- [flan-t5-xxl](https://huggingface.co/google/flan-t5-xxl) (11B parameters)
 
 Against the first 200 questions in the following persona datasets:
 - agreeableness
