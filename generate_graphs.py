@@ -90,12 +90,9 @@ def compute_all_pairs_correlations():
 def sample_response_probs(model_persona_data, num_samples):
     num_questions = len(model_persona_data)
     average_prob_list, model_prob_list = [], []
-    
-    for i in range(num_questions):
-        indices = list(range(num_questions))
-        indices.remove(i)
-
-        sampled_indices = np.random.choice(indices, num_samples, replace=False)
+    np.random.shuffle(model_persona_data)
+    for i in range(0, num_questions - num_samples, num_samples):
+        sampled_indices = list(range(i + 1, i + num_samples))
         avg_prob = np.mean(
             [extract_prob(model_persona_data[idx]) for idx in sampled_indices]
         )
