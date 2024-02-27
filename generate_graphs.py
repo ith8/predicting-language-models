@@ -86,8 +86,8 @@ def sample_response_probs(model_persona_data, num_samples):
     average_prob_list, model_prob_list = [], []
     np.random.shuffle(model_persona_data)
 
-    for i in range(0, num_questions-num_samples, num_samples):
-        sampled_indices = list(range(i+1,i+num_samples))
+    for i in range(0, num_questions - num_samples, num_samples):
+        sampled_indices = list(range(i + 1, i + num_samples))
         avg_prob = np.mean(
             [extract_prob(model_persona_data[idx]) for idx in sampled_indices]
         )

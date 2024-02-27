@@ -3,12 +3,15 @@ import os
 from generate_graphs import list_directories
 import jsonlines
 import torch
+import openai
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     T5ForConditionalGeneration,
     T5Tokenizer,
 )
+
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 
 def load_model_and_tokenizer(model_name):
@@ -67,7 +70,37 @@ def compute_logits(question, model, tokenizer, t5=False):
     return probs_list
 
 
-def generate_data(model_name, questions_file, max_questions=200, t5=False):
+def compute_logits_with_openai(question, model_name):
+    probs_list = {}
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model=model_name,
+        messages=[{"role": "user", "content": question}],
+        max_tokens=1,
+        logprobs=True,
+    )
+
+    # Extract the logprobs for the most likely next token
+    print(response.logprobs)
+    # print shape of logpbrobs
+    print(response.choices[0].logprobs.shape)
+    print(logprobs.shape)
+
+    logprobs = response.choices[0].logprobs.top_logprobs[0]
+
+    # Assuming "Yes" and "No" are among the tokens you want probabilities for
+    for answer in ["Yes", "No"]:
+        # Aggregate probabilities for "Yes" and "yes", "No" and "no" etc.
+        probs_list[answer] = sum(
+            [logprobs.get(answer_case, 0) for answer_case in [answer, answer.lower()]]
+        )
+
+    return probs_list
+
+
+def generate_data(
+    model_name, questions_file, max_questions=200, t5=False, openai=False
+):
     if t5:
         model, tokenizer = load_t5_model_and_tokenizer(model_name)
     else:
@@ -82,7 +115,10 @@ def generate_data(model_name, questions_file, max_questions=200, t5=False):
                 print(question)
                 if model_name.startswith("Qwen"):
                     question = "Answer with either yes or no only: " + question
-                probs = compute_logits(question, model, tokenizer, t5=t5)
+                if openai:
+                    probs = compute_logits_with_openai(question, model_name)
+                else:
+                    probs = compute_logits(question, model, tokenizer, t5=t5)
                 del obj["question"]
                 del obj["answer_not_matching_behavior"]
                 obj["probs"] = probs
@@ -96,14 +132,16 @@ def parse_args():
     parser.add_argument("--max_questions", default=200, type=int, help="max questions")
     parser.add_argument("--t5", type=bool, default=False, help="t5 model")
     parser.add_argument("--all", type=bool, default=False, help="all personas")
+    parser.add_argument("--openai", type=bool, default=False, help="openai model")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    if args.all:
-        _, jsonl_files = list_directories("models/")
-        for jsonl_file in jsonl_files:
-            generate_data(args.model_name, os.path.join("evals/persona", jsonl_file), args.max_questions, args.t5)
-    else:
-        generate_data(args.model_name, args.questions_file, args.max_questions, args.t5)
+    # if args.all:
+    #     _, jsonl_files = list_directories("models/")
+    #     for jsonl_file in jsonl_files:
+    #         generate_data(args.model_name, os.path.join("evals/persona", jsonl_file), args.max_questions, args.t5)
+    # else:
+    #     generate_data(args.model_name, args.questions_file, args.max_questions, args.t5)
+    generate_data(args.model_name, args.questions_file, 1, args.t5, args.openai)

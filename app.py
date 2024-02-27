@@ -10,7 +10,10 @@ app = Flask(
     static_folder="static",
 )
 
-MODELS_PATH = "models" if not os.environ.get("MODELS_PATH") else os.environ.get("MODELS_PATH")
+MODELS_PATH = (
+    "models" if not os.environ.get("MODELS_PATH") else os.environ.get("MODELS_PATH")
+)
+
 
 @app.route("/")
 def home():
