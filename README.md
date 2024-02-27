@@ -91,14 +91,4 @@ Correlation between a model and sampled responses for a given persona is compute
 General personality results:
 ![General personality results](static/images/persona_results.png)
 
-For the five models evaluated, the best predictor of their response is sumaarized in the table below:
-
-Model | Best Predictors | 2nd | 3rd | 4th | 5th
---- | --- | --- | --- | --- | --- |
-Qwen1.5-1.8B-Chat | Qwen1.5-7B-Chat | flan-t5-xl | flan-t5-large  | flan-t5-small
-Qwen1.5-7B-Chat | flan-t5-xl | Qwen1.5-1.8B-Chat | flan-t5-large  | flan-t5-small
-flan-t5-small | flan-t5-large  | flan-t5-xl | Qwen1.5-8B-Chat | Qwen1.5-1.8B-Chat
-flan-t5-large | flan-t5-xl | Qwen1.5-7B-Chat | Qwen1.5-1.8B-Chat | flan-t5-small 
-flan-t5-xl | flan-t5-large | Qwen1.5-7B-Chat | Qwen1.5-1.8B-Chat | flan-t5-small 
-
 

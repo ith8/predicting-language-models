@@ -9,6 +9,7 @@ import numpy as np
 
 MODEL_ORDER = [
     "gpt-3.5-turbo",
+    "gpt-4-1106-preview",
     "flan-t5-small",
     "flan-t5-large",
     "flan-t5-xl",
@@ -89,10 +90,12 @@ def compute_all_pairs_correlations():
 def sample_response_probs(model_persona_data, num_samples):
     num_questions = len(model_persona_data)
     average_prob_list, model_prob_list = [], []
-    np.random.shuffle(model_persona_data)
+    
+    for i in range(num_questions):
+        indices = list(range(num_questions))
+        indices.remove(i)
 
-    for i in range(0, num_questions - num_samples, num_samples):
-        sampled_indices = list(range(i + 1, i + num_samples))
+        sampled_indices = np.random.choice(indices, num_samples, replace=False)
         avg_prob = np.mean(
             [extract_prob(model_persona_data[idx]) for idx in sampled_indices]
         )
@@ -164,7 +167,7 @@ def plot_heatmap(correlations, persona, save_path):
         if not graph_averages:
             corr_matrix.at[model2, model1] = value
 
-    plt.figure(figsize=(14, 12))
+    plt.figure(figsize=(16, 14))
     cmap = sns.diverging_palette(10, 133, as_cmap=True)
     sns.heatmap(
         corr_matrix,
@@ -220,6 +223,7 @@ def plot_persona_results(base_path="models/"):
         "Qwen1.5-7B-Chat": "green",
         "Qwen1.5-14B-Chat": "darkgreen",
         "gpt-3.5-turbo": "orange",
+        "gpt-4-1106-preview": "red",
     }
 
     plt.figure(figsize=(12, 10))

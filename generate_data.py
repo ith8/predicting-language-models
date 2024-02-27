@@ -143,8 +143,6 @@ if __name__ == "__main__":
     if args.all:
         _, jsonl_files = list_directories("models/")
         for jsonl_file in jsonl_files:
-            if "agreeableness" in jsonl_file:
-                continue
             generate_data(
                 args.model_name,
                 os.path.join("evals/persona", jsonl_file),

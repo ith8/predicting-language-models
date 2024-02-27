@@ -87,62 +87,6 @@
                     <img src="static/images/persona_results.png"
                         alt="Persona Results">
                 </div>
-                <p>For the five models evaluated, the best predictor of their
-                    response is sumaarized in the table below:</p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Model</th>
-                            <th>Best Predictors</th>
-                            <th>2nd</th>
-                            <th>3rd</th>
-                            <th>4th</th>
-                            <th>5th</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Qwen1.5-1.8B-Chat</td>
-                            <td>Qwen1.5-7B-Chat</td>
-                            <td>flan-t5-xl</td>
-                            <td>flan-t5-large</td>
-                            
-                            <td>flan-t5-small</td>
-                        </tr>
-                        <tr>
-                            <td>Qwen1.5-7B-Chat</td>
-                            <td>flan-t5-xl</td>
-                            <td>Qwen1.5-1.8B-Chat</td>
-                            <td>flan-t5-large</td>
-                            
-                            <td>flan-t5-small</td>
-                        </tr>
-                        <tr>
-                            <td>flan-t5-small</td>
-                            <td>flan-t5-large</td>
-                            
-                            <td>flan-t5-xl</td>
-                            <td>Qwen1.5-8B-Chat</td>
-                            <td>Qwen1.5-1.8B-Chat</td>
-                        </tr>
-                        <tr>
-                            <td>flan-t5-large</td>
-                            <td>flan-t5-xl</td>
-                            <td>Qwen1.5-7B-Chat</td>
-                            <td>Qwen1.5-1.8B-Chat</td>
-                            <td>flan-t5-small</td>
-                            
-                        </tr>
-                        <tr>
-                            <td>flan-t5-xl</td>
-                            <td>flan-t5-large</td>
-                            <td>Qwen1.5-7B-Chat</td>
-                            <td>Qwen1.5-1.8B-Chat</td>
-                            <td>flan-t5-small</td>
-                            
-                        </tr>
-                    </tbody>
-                </table>
 
                 <h2 id="computing-correlations">Computing Correlations</h2>
 
@@ -164,7 +108,7 @@
                 </div>
                 <h3>Correlation between model with sampled response </h3>
                 <p>Correlation between a model and sampled responses for a given
-                    persona is computed by randomly sampling responses to n 
+                    persona is computed by randomly sampling responses to n
                     other questions from the same persona dataset,
                     averaging the probabily corresponding to
                     &quot;answer_matching_behavior&quot; to compute the
