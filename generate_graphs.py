@@ -115,7 +115,6 @@ def compute_cosine_similarity(average_activation_vectors, query_data, activation
         dim=0,
     )
     score = (similarity + 1) / 2
-
     predicted_prob = torch.softmax(torch.tensor([score, 1-score]), dim=0)[0]
     return predicted_prob.item()
 

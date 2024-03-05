@@ -121,7 +121,7 @@ def generate_data(
         model, tokenizer = load_model_and_tokenizer(model_name)
 
     if question_pairs:
-        result_file_name = f"models/question_pairs/{model_name}/{os.path.basename(questions_file)}"
+        result_file_name = f"models_question_pairs/{model_name}/{os.path.basename(questions_file)}"
     else:
         result_file_name = f"models/{model_name}/{os.path.basename(questions_file)}"
     os.makedirs(os.path.dirname(result_file_name), exist_ok=True)
