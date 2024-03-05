@@ -1,6 +1,7 @@
 import argparse
 import os
 from generate_graphs import list_directories
+from sentence_transformers import SentenceTransformer
 import jsonlines
 import torch
 import openai
@@ -174,7 +175,30 @@ def generate_data(
                     obj["answer_matching_behavior"] = answer_not_matching_behavior
                     writer.write(obj)
 
+def compute_embeddings(question, model):
+    pass
 
+def generate_embedding(
+    model_name,
+    questions_file,
+    max_questions=200,
+):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    result_file_name = f"embeddings/{model_name}/{os.path.basename(questions_file)}"
+    os.makedirs(os.path.dirname(result_file_name), exist_ok=True)
+    with jsonlines.open(questions_file) as reader:
+        with jsonlines.open(result_file_name, mode="w") as writer:
+            for obj in list(reader)[:max_questions]:
+                question = obj["question"]
+                print(question)
+               
+                embedding = compute_embeddings(question, model)
+                obj["embedding"] = embedding
+                del obj["question"]
+                del obj["answer_not_matching_behavior"]
+                writer.write(obj)
+
+             
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate data for a model")
     parser.add_argument("--model_name", type=str, help="model name")
