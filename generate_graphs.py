@@ -73,7 +73,7 @@ def split_by_answer_matching_behavior(data):
 
 
 def extract_activations(data, activation_layer):
-    return data.get("activations")[activation_layer]
+    return torch.tensor(data.get("activations")[activation_layer])
 
 
 def sample_response_probs(model_persona_data, num_samples):
@@ -105,7 +105,7 @@ def compute_average_activation_vectors(data, activation_layer):
 
 
 def compute_cosine_similarity(average_activation_vectors, query_data, activation_layer):
-    activation_vector = torch.tensor(extract_activations(query_data, activation_layer))
+    activation_vector = extract_activations(query_data, activation_layer)
 
     similarity = torch.cosine_similarity(
         activation_vector,
@@ -115,13 +115,13 @@ def compute_cosine_similarity(average_activation_vectors, query_data, activation
         dim=0,
     )
     score = (similarity + 1) / 2
-    predicted_prob = torch.softmax(torch.tensor([score, 1-score]), dim=0)[0]
+    predicted_prob = torch.softmax(torch.tensor([score, 1 - score]), dim=0)[0]
     return predicted_prob.item()
 
 
 def predicted_probs_from_activation(model_persona_data, activation_layer):
     predicted_prob_list, model_prob_list = [], []
-    prediction_set, eval_set = model_persona_data[:180], model_persona_data[180:]
+    eval_set, prediction_set = model_persona_data[:40], model_persona_data[40:]
     average_activation_vectors = compute_average_activation_vectors(
         prediction_set, activation_layer
     )
@@ -131,6 +131,37 @@ def predicted_probs_from_activation(model_persona_data, activation_layer):
                 average_activation_vectors, query_data, activation_layer
             )
         )
+        model_prob_list.append(extract_prob(model_persona_data[i]))
+
+    return model_prob_list, predicted_prob_list
+
+
+def compute_activation_difference(model_persona_data, activation_layer):
+    activations = [extract_activations(d, activation_layer) for d in model_persona_data]
+    activation_differences = []
+    for i in range(0, len(activations), 2):
+        activation_difference = activations[i] - activations[i + 1]
+        if model_persona_data[i]["answer_matching_behavior"].strip() == "No":
+            activation_difference = -activation_difference
+        activation_differences.append(activation_difference)
+    return activation_differences
+
+
+def predicted_probs_from_activation_difference(model_persona_data, activation_layer):
+    predicted_prob_list, model_prob_list = [], []
+    activation_differences = compute_activation_difference(
+        model_persona_data, activation_layer
+    )
+    eval_set, predict_set = activation_differences[:40], activation_differences[40:]
+    average_difference_vector = torch.mean(torch.stack(predict_set), dim=0)
+    for i, difference_vector in enumerate(eval_set):
+        similarity = torch.cosine_similarity(
+            difference_vector, average_difference_vector, dim=0
+        )
+        score = (similarity + 1) / 2
+        predicted_prob = torch.softmax(torch.tensor([score, 1 - score]), dim=0)[0]
+
+        predicted_prob_list.append(score.item())
         model_prob_list.append(extract_prob(model_persona_data[i]))
 
     return model_prob_list, predicted_prob_list
@@ -197,24 +228,59 @@ def compute_correlations_with_prediction_from_activations():
             file_path = os.path.join("models/", model_name, persona_data_file_name)
             model_persona_data = load_file_contents(file_path)
             keys = (
-                [
-                    "encoder_last_hidden_state",
-                    "decoder_last_hidden_state",
-                ]
+                ["encoder_last_hidden_state", "decoder_last_hidden_state"]
                 if model_name.startswith("google")
-                else ["last_hidden_state"]
+                else ["embedding_hidden_state", "last_hidden_state"]
             )
             for hidden_layer in keys:
                 model_probs_list, predicted_probs_list = (
                     predicted_probs_from_activation(model_persona_data, hidden_layer)
                 )
-                (
-                    correlations[
-                        model_name.split("/")[-1],
-                        f'{hidden_layer.split("_")[0]} hidden layer',
-                    ],
-                    _,
-                ) = pearsonr(model_probs_list, predicted_probs_list)
+                activation_name = f'{hidden_layer.split("_")[0]} layer'
+                if model_name.startswith("Qwen"):
+                    activation_name = "qwen " + activation_name
+                correlations[model_name.split("/")[-1], activation_name], _ = pearsonr(
+                    model_probs_list, predicted_probs_list
+                )
+
+        persona_correlations[persona_data_file_name] = correlations
+
+    return persona_correlations
+
+
+def compute_correlations_with_contrasting_pairs_activations():
+    model_dirs, jsonl_files = list_directories("models/")
+    persona_correlations = {}
+
+    for persona_data_file_name in jsonl_files:
+        correlations = {}
+        for model_name in model_dirs:
+            if not (
+                model_name.startswith("google/flan-t5-small")
+                or model_name.startswith("google/flan-t5-large")
+                or model_name.startswith("google/flan-t5-xl")
+            ):
+                continue
+            file_path = os.path.join("models/", model_name, persona_data_file_name)
+            model_persona_data = load_file_contents(file_path)
+            keys = (
+                ["encoder_last_hidden_state", "decoder_last_hidden_state"]
+                if model_name.startswith("google")
+                else ["embedding_hidden_state", "last_hidden_state"]
+            )
+            for hidden_layer in keys:
+                model_probs_list, predicted_probs_list = (
+                    predicted_probs_from_activation_difference(
+                        model_persona_data, hidden_layer
+                    )
+                )
+                activation_name = f'{hidden_layer.split("_")[0]} layer'
+                if model_name.startswith("Qwen"):
+                    activation_name = "qwen " + activation_name
+
+                correlations[model_name.split("/")[-1], activation_name], _ = pearsonr(
+                    model_probs_list, predicted_probs_list
+                )
 
         persona_correlations[persona_data_file_name] = correlations
 
@@ -355,7 +421,7 @@ def plot_persona_results(base_path="models/"):
 
 
 if __name__ == "__main__":
-    plot_persona_results()
+    # plot_persona_results()
 
     # generate_all_pairs_heatmaps(
     #     compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
@@ -363,13 +429,21 @@ if __name__ == "__main__":
     # generate_aggregate_heatmap(
     #     compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
     # )
+    # generate_all_pairs_heatmaps(
+    #     compute_correlations_with_prediction_from_activations(),
+    #     save_path=f"{TARGET_DIR}/activation_correlations/",
+    # )
+    # generate_aggregate_heatmap(
+    #     compute_correlations_with_prediction_from_activations(),
+    #     save_path=f"{TARGET_DIR}/activation_correlations/",
+    # )
     generate_all_pairs_heatmaps(
-        compute_correlations_with_prediction_from_activations(),
-        save_path=f"{TARGET_DIR}/activation_correlations/",
+        compute_correlations_with_contrasting_pairs_activations(),
+        save_path=f"{TARGET_DIR}/contrasting_pairs_activation_correlations/",
     )
     generate_aggregate_heatmap(
-        compute_correlations_with_prediction_from_activations(),
-        save_path=f"{TARGET_DIR}/activation_correlations/",
+        compute_correlations_with_contrasting_pairs_activations(),
+        save_path=f"{TARGET_DIR}/contrasting_pairs_activation_correlations/",
     )
 
     # generate_all_pairs_heatmaps(

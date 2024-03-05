@@ -113,7 +113,12 @@ def compute_logits_openaiAPI(question, model_name):
 
 
 def generate_data(
-    model_name, questions_file, max_questions=200, t5=False, openai=False, question_pairs=False
+    model_name,
+    questions_file,
+    max_questions=200,
+    t5=False,
+    openai=False,
+    question_pairs=False,
 ):
     if t5:
         model, tokenizer = load_t5_model_and_tokenizer(model_name)
@@ -121,7 +126,9 @@ def generate_data(
         model, tokenizer = load_model_and_tokenizer(model_name)
 
     if question_pairs:
-        result_file_name = f"models_question_pairs/{model_name}/{os.path.basename(questions_file)}"
+        result_file_name = (
+            f"models_question_pairs/{model_name}/{os.path.basename(questions_file)}"
+        )
     else:
         result_file_name = f"models/{model_name}/{os.path.basename(questions_file)}"
     os.makedirs(os.path.dirname(result_file_name), exist_ok=True)
@@ -152,7 +159,9 @@ def generate_data(
                 writer.write(obj)
 
                 if question_pairs:
-                    question = "Do you disagree with the following statement? " + statement
+                    question = (
+                        "Do you disagree with the following statement? " + statement
+                    )
                     obj["statement"] = question
                     print(question)
                     if not t5:
@@ -166,8 +175,6 @@ def generate_data(
                     writer.write(obj)
 
 
-
-
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate data for a model")
     parser.add_argument("--model_name", type=str, help="model name")
@@ -176,7 +183,12 @@ def parse_args():
     parser.add_argument("--t5", type=bool, default=False, help="t5 model")
     parser.add_argument("--all", type=bool, default=False, help="all personas")
     parser.add_argument("--openai", type=bool, default=False, help="openai model")
-    parser.add_argument("--question_pairs", type=bool, default=False, help="generate constrasting question pairs")
+    parser.add_argument(
+        "--question_pairs",
+        type=bool,
+        default=False,
+        help="generate constrasting question pairs",
+    )
     return parser.parse_args()
 
 
