@@ -192,7 +192,7 @@ def compute_correlations_with_prediction_from_activations():
     for persona_data_file_name in jsonl_files:
         correlations = {}
         for model_name in model_dirs:
-            if not (model_name.startswith("google")):
+            if not (model_name.startswith("google") or model_name.startswith("Qwen")):
                 continue
             file_path = os.path.join("models/", model_name, persona_data_file_name)
             model_persona_data = load_file_contents(file_path)
@@ -202,7 +202,7 @@ def compute_correlations_with_prediction_from_activations():
                     "decoder_last_hidden_state",
                 ]
                 if model_name.startswith("google")
-                else ["last_hidden_state", "embedding_hidden_state"]
+                else ["last_hidden_state"]
             )
             for hidden_layer in keys:
                 model_probs_list, predicted_probs_list = (
@@ -364,6 +364,10 @@ if __name__ == "__main__":
     #     compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
     # )
     generate_all_pairs_heatmaps(
+        compute_correlations_with_prediction_from_activations(),
+        save_path=f"{TARGET_DIR}/activation_correlations/",
+    )
+    generate_aggregate_heatmap(
         compute_correlations_with_prediction_from_activations(),
         save_path=f"{TARGET_DIR}/activation_correlations/",
     )

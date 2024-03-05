@@ -2,3 +2,4 @@ evals/
 venv/
 models-test/
 *.pyc
+nohup.out
