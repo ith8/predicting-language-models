@@ -253,9 +253,9 @@ def compute_correlations_with_contrasting_pairs_activations():
         correlations = {}
         for model_name in model_dirs:
             if not (
-                model_name.startswith("google/flan-t5-small")
-                or model_name.startswith("google/flan-t5-large")
-                or model_name.startswith("google/flan-t5-xl")
+                model_name.startswith("google")
+                or model_name.startswith("Qwen/Qwen1.5-1.8B-Chat")
+                or model_name.startswith("Qwen/Qwen1.5-7B-Chat")
             ):
                 continue
             file_path = os.path.join("models_question_pairs/", model_name, persona_data_file_name)
