@@ -178,12 +178,21 @@ def generate_data(
 def compute_embeddings(question, model):
     pass
 
+def compute_embeddings_openAI(question, model_name):
+    client = openai.OpenAI()
+    response = client.embeddings.create(
+    input=question,
+    model=model_name
+    )
+    return response.data[0].embedding
+
 def generate_embedding(
     model_name,
     questions_file,
     max_questions=200,
+    openai=False,
 ):
-    model = SentenceTransformer('all-MiniLM-L6-v2')
+    #model = SentenceTransformer('all-MiniLM-L6-v2')
     result_file_name = f"embeddings/{model_name}/{os.path.basename(questions_file)}"
     os.makedirs(os.path.dirname(result_file_name), exist_ok=True)
     with jsonlines.open(questions_file) as reader:
@@ -191,8 +200,10 @@ def generate_embedding(
             for obj in list(reader)[:max_questions]:
                 question = obj["question"]
                 print(question)
-               
-                embedding = compute_embeddings(question, model)
+                if openai:
+                    embedding = compute_embeddings_openAI(question, model_name)
+                else:
+                    embedding = compute_embeddings(question, model_name)
                 obj["embedding"] = embedding
                 del obj["question"]
                 del obj["answer_not_matching_behavior"]
@@ -213,28 +224,48 @@ def parse_args():
         default=False,
         help="generate constrasting question pairs",
     )
+    parser.add_argument("--embedding", type=bool, default=False, help="generate embeddings")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    if args.all:
-        _, jsonl_files = list_directories("models/")
-        for jsonl_file in jsonl_files:
+    if args.embedding:
+        if args.all:
+            _, jsonl_files = list_directories("models/")
+            for jsonl_file in jsonl_files:
+                generate_embedding(
+                    args.model_name,
+                    os.path.join("evals/persona", jsonl_file),
+                    args.max_questions,
+                    args.openai,
+                )
+        else:
+            generate_embedding(
+                args.model_name,
+                args.questions_file,
+                args.max_questions,
+                args.openai,
+            )
+
+    else:
+        if args.all:
+            _, jsonl_files = list_directories("models/")
+            for jsonl_file in jsonl_files:
+                generate_data(
+                    args.model_name,
+                    os.path.join("evals/persona", jsonl_file),
+                    args.max_questions,
+                    args.t5,
+                    args.openai,
+                    args.question_pairs,
+                )
+        else:
             generate_data(
                 args.model_name,
-                os.path.join("evals/persona", jsonl_file),
+                args.questions_file,
                 args.max_questions,
                 args.t5,
                 args.openai,
                 args.question_pairs,
             )
-    else:
-        generate_data(
-            args.model_name,
-            args.questions_file,
-            args.max_questions,
-            args.t5,
-            args.openai,
-            args.question_pairs,
-        )
