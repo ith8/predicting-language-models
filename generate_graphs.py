@@ -115,8 +115,7 @@ def compute_cosine_similarity(average_activation_vectors, query_data, activation
         dim=0,
     )
     score = (similarity + 1) / 2
-    predicted_prob = torch.softmax(torch.tensor([score, 1 - score]), dim=0)[0]
-    return predicted_prob.item()
+    return score.item()
 
 
 def predicted_probs_from_activation(model_persona_data, activation_layer):
@@ -156,13 +155,11 @@ def predicted_probs_from_activation_difference(model_persona_data, activation_la
     average_difference_vector = torch.mean(torch.stack(predict_set), dim=0)
     for i, difference_vector in enumerate(eval_set):
         similarity = torch.cosine_similarity(
-            difference_vector, average_difference_vector, dim=0
+            average_difference_vector, difference_vector, dim=0
         )
         score = (similarity + 1) / 2
-        predicted_prob = torch.softmax(torch.tensor([score, 1 - score]), dim=0)[0]
-
         predicted_prob_list.append(score.item())
-        model_prob_list.append(extract_prob(model_persona_data[i]))
+        model_prob_list.append(extract_prob(model_persona_data[i*2]))
 
     return model_prob_list, predicted_prob_list
 
@@ -249,7 +246,7 @@ def compute_correlations_with_prediction_from_activations():
 
 
 def compute_correlations_with_contrasting_pairs_activations():
-    model_dirs, jsonl_files = list_directories("models/")
+    model_dirs, jsonl_files = list_directories("models_question_pairs/")
     persona_correlations = {}
 
     for persona_data_file_name in jsonl_files:
@@ -261,7 +258,7 @@ def compute_correlations_with_contrasting_pairs_activations():
                 or model_name.startswith("google/flan-t5-xl")
             ):
                 continue
-            file_path = os.path.join("models/", model_name, persona_data_file_name)
+            file_path = os.path.join("models_question_pairs/", model_name, persona_data_file_name)
             model_persona_data = load_file_contents(file_path)
             keys = (
                 ["encoder_last_hidden_state", "decoder_last_hidden_state"]
