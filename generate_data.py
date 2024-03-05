@@ -28,7 +28,7 @@ def load_t5_model_and_tokenizer(model_name):
 
 
 def compute_logits(question, model, tokenizer, t5=False):
-    probs_list = {}
+    probs_list, activations = {}, {}
     input_text = question + "\n"
     input_ids = tokenizer(input_text, return_tensors="pt").input_ids
 
@@ -38,12 +38,24 @@ def compute_logits(question, model, tokenizer, t5=False):
             decoder_input_ids = torch.tensor([[decoder_start_token]])
             outputs = model(
                 input_ids,
-                output_hidden_states=False,
+                output_hidden_states=True,
                 decoder_input_ids=decoder_input_ids,
+            )
+            activations["encoder_last_hidden_state"] = (
+                outputs.encoder_last_hidden_state.squeeze(0).mean(dim=0).tolist()
+            )
+            activations["decoder_last_hidden_state"] = (
+                outputs.decoder_hidden_states[-1].squeeze(0).mean(dim=0).tolist()
             )
             # generated_ids = model.generate(input_ids, max_length=10, decoder_input_ids=decoder_input_ids)
         else:
-            outputs = model(input_ids, output_hidden_states=False)
+            outputs = model(input_ids, output_hidden_states=True)
+            activations["last_hidden_state"] = (
+                outputs.hidden_states[-1].squeeze(0).mean(dim=0).tolist()
+            )
+            activations["embedding_hidden_state"] = (
+                outputs.hidden_states[0].squeeze(0).mean(dim=0).tolist()
+            )
             # generated_ids = model.generate(input_ids, max_length=100, pad_token_id=tokenizer.eos_token_id)
         # generated_text = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
         # print(f"Generated text: {generated_text}")
@@ -68,7 +80,7 @@ def compute_logits(question, model, tokenizer, t5=False):
         probs_list[answer] += torch.softmax(last_token_logits, dim=0)[
             tokenizer.encode(answer.lower())[0]
         ].item()
-    return probs_list
+    return probs_list, activations
 
 
 def compute_logits_openaiAPI(question, model_name):
@@ -101,30 +113,59 @@ def compute_logits_openaiAPI(question, model_name):
 
 
 def generate_data(
-    model_name, questions_file, max_questions=200, t5=False, openai=False
+    model_name, questions_file, max_questions=200, t5=False, openai=False, question_pairs=False
 ):
     if t5:
         model, tokenizer = load_t5_model_and_tokenizer(model_name)
     elif not openai:
         model, tokenizer = load_model_and_tokenizer(model_name)
 
-    result_file_name = f"models/{model_name}/{os.path.basename(questions_file)}"
+    if question_pairs:
+        result_file_name = f"models/question_pairs/{model_name}/{os.path.basename(questions_file)}"
+    else:
+        result_file_name = f"models/{model_name}/{os.path.basename(questions_file)}"
     os.makedirs(os.path.dirname(result_file_name), exist_ok=True)
     with jsonlines.open(questions_file) as reader:
         with jsonlines.open(result_file_name, mode="w") as writer:
             for obj in list(reader)[:max_questions]:
-                question = obj["question"]
+                statement = obj["statement"]
+                if question_pairs:
+                    question = "Do you agree with the following statement? " + statement
+                    obj["statement"] = question
+                else:
+                    question = obj["question"]
                 print(question)
                 if not t5:
                     question = "Answer with either yes or no only: " + question
                 if openai:
                     probs = compute_logits_openaiAPI(question, model_name)
                 else:
-                    probs = compute_logits(question, model, tokenizer, t5=t5)
+                    probs, activations = compute_logits(
+                        question, model, tokenizer, t5=t5
+                    )
+                    obj["activations"] = activations
+
                 del obj["question"]
+                answer_not_matching_behavior = obj["answer_not_matching_behavior"]
                 del obj["answer_not_matching_behavior"]
                 obj["probs"] = probs
                 writer.write(obj)
+
+                if question_pairs:
+                    question = "Do you disagree with the following statement? " + statement
+                    obj["statement"] = question
+                    print(question)
+                    if not t5:
+                        question = "Answer with either yes or no only: " + question
+                    probs, activations = compute_logits(
+                        question, model, tokenizer, t5=t5
+                    )
+                    obj["activations"] = activations
+                    obj["probs"] = probs
+                    obj["answer_matching_behavior"] = answer_not_matching_behavior
+                    writer.write(obj)
+
+
 
 
 def parse_args():
@@ -135,6 +176,7 @@ def parse_args():
     parser.add_argument("--t5", type=bool, default=False, help="t5 model")
     parser.add_argument("--all", type=bool, default=False, help="all personas")
     parser.add_argument("--openai", type=bool, default=False, help="openai model")
+    parser.add_argument("--question_pairs", type=bool, default=False, help="generate constrasting question pairs")
     return parser.parse_args()
 
 
@@ -149,6 +191,7 @@ if __name__ == "__main__":
                 args.max_questions,
                 args.t5,
                 args.openai,
+                args.question_pairs,
             )
     else:
         generate_data(
@@ -157,4 +200,5 @@ if __name__ == "__main__":
             args.max_questions,
             args.t5,
             args.openai,
+            args.question_pairs,
         )

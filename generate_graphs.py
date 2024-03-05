@@ -6,6 +6,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 
 MODEL_ORDER = [
     "gpt-3.5-turbo",
@@ -61,6 +62,81 @@ def extract_prob(data):
     return normalized_probs[data["answer_matching_behavior"].strip()]
 
 
+def split_by_answer_matching_behavior(data):
+    yes_matching_queries = [
+        d for d in data if d["answer_matching_behavior"].strip() == "Yes"
+    ]
+    no_matching_queries = [
+        d for d in data if d["answer_matching_behavior"].strip() == "No"
+    ]
+    return yes_matching_queries, no_matching_queries
+
+
+def extract_activations(data, activation_layer):
+    return data.get("activations")[activation_layer]
+
+
+def sample_response_probs(model_persona_data, num_samples):
+    num_questions = len(model_persona_data)
+    predicted_prob_list, model_prob_list = [], []
+    np.random.shuffle(model_persona_data)
+    for i in range(0, num_questions - num_samples, num_samples):
+        sampled_indices = list(range(i + 1, i + num_samples))
+        avg_prob = np.mean(
+            [extract_prob(model_persona_data[idx]) for idx in sampled_indices]
+        )
+        predicted_prob_list.append(avg_prob)
+        model_prob_list.append(extract_prob(model_persona_data[i]))
+        model_persona_data[i]["predicted_avg"] = avg_prob
+
+    return model_prob_list, predicted_prob_list
+
+
+def compute_average_activation_vectors(data, activation_layer):
+    activations_vectors = {}
+    yes_matching_queries, no_matching_queries = split_by_answer_matching_behavior(data)
+    activations_vectors["Yes"] = np.mean(
+        [extract_activations(d, activation_layer) for d in yes_matching_queries], axis=0
+    )
+    activations_vectors["No"] = np.mean(
+        [extract_activations(d, activation_layer) for d in no_matching_queries], axis=0
+    )
+    return activations_vectors
+
+
+def compute_cosine_similarity(average_activation_vectors, query_data, activation_layer):
+    activation_vector = torch.tensor(extract_activations(query_data, activation_layer))
+
+    similarity = torch.cosine_similarity(
+        activation_vector,
+        torch.tensor(
+            average_activation_vectors[query_data["answer_matching_behavior"].strip()]
+        ),
+        dim=0,
+    )
+    score = (similarity + 1) / 2
+
+    predicted_prob = torch.softmax(torch.tensor([score, 1-score]), dim=0)[0]
+    return predicted_prob.item()
+
+
+def predicted_probs_from_activation(model_persona_data, activation_layer):
+    predicted_prob_list, model_prob_list = [], []
+    prediction_set, eval_set = model_persona_data[:180], model_persona_data[180:]
+    average_activation_vectors = compute_average_activation_vectors(
+        prediction_set, activation_layer
+    )
+    for i, query_data in enumerate(eval_set):
+        predicted_prob_list.append(
+            compute_cosine_similarity(
+                average_activation_vectors, query_data, activation_layer
+            )
+        )
+        model_prob_list.append(extract_prob(model_persona_data[i]))
+
+    return model_prob_list, predicted_prob_list
+
+
 def compute_all_pairs_correlations():
     model_dirs, jsonl_files = list_directories("models/")
     persona_correlations = {}
@@ -87,22 +163,6 @@ def compute_all_pairs_correlations():
     return persona_correlations
 
 
-def sample_response_probs(model_persona_data, num_samples):
-    num_questions = len(model_persona_data)
-    average_prob_list, model_prob_list = [], []
-    np.random.shuffle(model_persona_data)
-    for i in range(0, num_questions - num_samples, num_samples):
-        sampled_indices = list(range(i + 1, i + num_samples))
-        avg_prob = np.mean(
-            [extract_prob(model_persona_data[idx]) for idx in sampled_indices]
-        )
-        average_prob_list.append(avg_prob)
-        model_prob_list.append(extract_prob(model_persona_data[i]))
-        model_persona_data[i]["predicted_avg"] = avg_prob
-
-    return model_prob_list, average_prob_list
-
-
 def compute_correlations_with_sampled_responses():
     model_dirs, jsonl_files = list_directories("models/")
     persona_correlations = {}
@@ -120,6 +180,42 @@ def compute_correlations_with_sampled_responses():
                 correlations[model_name.split("/")[-1], num_samples], _ = pearsonr(
                     model_probs_list, avg_probs_list
                 )
+
+        persona_correlations[persona_data_file_name] = correlations
+
+    return persona_correlations
+
+
+def compute_correlations_with_prediction_from_activations():
+    model_dirs, jsonl_files = list_directories("models/")
+    persona_correlations = {}
+
+    for persona_data_file_name in jsonl_files:
+        correlations = {}
+        for model_name in model_dirs:
+            if not (model_name.startswith("google")):
+                continue
+            file_path = os.path.join("models/", model_name, persona_data_file_name)
+            model_persona_data = load_file_contents(file_path)
+            keys = (
+                [
+                    "encoder_last_hidden_state",
+                    "decoder_last_hidden_state",
+                ]
+                if model_name.startswith("google")
+                else ["last_hidden_state", "embedding_hidden_state"]
+            )
+            for hidden_layer in keys:
+                model_probs_list, predicted_probs_list = (
+                    predicted_probs_from_activation(model_persona_data, hidden_layer)
+                )
+                (
+                    correlations[
+                        model_name.split("/")[-1],
+                        f'{hidden_layer.split("_")[0]} hidden layer',
+                    ],
+                    _,
+                ) = pearsonr(model_probs_list, predicted_probs_list)
 
         persona_correlations[persona_data_file_name] = correlations
 
@@ -149,11 +245,13 @@ def generate_aggregate_heatmap(all_correlations, save_path):
 
 
 def plot_heatmap(correlations, persona, save_path):
-    graph_averages = "sample" in save_path
+    graph_averages = "all_pairs" not in save_path
     os.makedirs(save_path, exist_ok=True)
 
     columns = sorted(set([pair[1] for pair in correlations.keys()]))
     index = MODEL_ORDER
+    if "activation" in save_path:
+        index = [i for i in index if "gpt" not in i]
 
     corr_matrix = pd.DataFrame(
         index=index, columns=columns if graph_averages else index, data=np.nan
@@ -260,18 +358,22 @@ def plot_persona_results(base_path="models/"):
 if __name__ == "__main__":
     plot_persona_results()
 
+    # generate_all_pairs_heatmaps(
+    #     compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
+    # )
+    # generate_aggregate_heatmap(
+    #     compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
+    # )
     generate_all_pairs_heatmaps(
-        compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
-    )
-    generate_aggregate_heatmap(
-        compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
+        compute_correlations_with_prediction_from_activations(),
+        save_path=f"{TARGET_DIR}/activation_correlations/",
     )
 
-    generate_all_pairs_heatmaps(
-        compute_correlations_with_sampled_responses(),
-        save_path=f"{TARGET_DIR}/n_sample_averages/",
-    )
-    generate_aggregate_heatmap(
-        compute_correlations_with_sampled_responses(),
-        save_path=f"{TARGET_DIR}/n_sample_averages/",
-    )
+    # generate_all_pairs_heatmaps(
+    #     compute_correlations_with_sampled_responses(),
+    #     save_path=f"{TARGET_DIR}/n_sample_averages/",
+    # )
+    # generate_aggregate_heatmap(
+    #     compute_correlations_with_sampled_responses(),
+    #     save_path=f"{TARGET_DIR}/n_sample_averages/",
+    # )

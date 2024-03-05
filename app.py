@@ -56,6 +56,8 @@ def get_file_content(model, filename):
                     json_line["No"] = json_line["probs"].get("No", None)
 
                     del json_line["probs"]
+                    if "activations" in json_line:
+                        del json_line["activations"]
 
                     content.append(json_line)
                 except json.JSONDecodeError as e:
