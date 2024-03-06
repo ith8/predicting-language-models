@@ -175,16 +175,16 @@ def generate_data(
                     obj["answer_matching_behavior"] = answer_not_matching_behavior
                     writer.write(obj)
 
+
 def compute_embeddings(question, model):
     pass
 
+
 def compute_embeddings_openAI(question, model_name):
     client = openai.OpenAI()
-    response = client.embeddings.create(
-    input=question,
-    model=model_name
-    )
+    response = client.embeddings.create(input=question, model=model_name)
     return response.data[0].embedding
+
 
 def generate_embedding(
     model_name,
@@ -192,7 +192,7 @@ def generate_embedding(
     max_questions=200,
     openai=False,
 ):
-    #model = SentenceTransformer('all-MiniLM-L6-v2')
+    # model = SentenceTransformer('all-MiniLM-L6-v2')
     result_file_name = f"embeddings/{model_name}/{os.path.basename(questions_file)}"
     os.makedirs(os.path.dirname(result_file_name), exist_ok=True)
     with jsonlines.open(questions_file) as reader:
@@ -209,7 +209,7 @@ def generate_embedding(
                 del obj["answer_not_matching_behavior"]
                 writer.write(obj)
 
-             
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate data for a model")
     parser.add_argument("--model_name", type=str, help="model name")
@@ -224,7 +224,9 @@ def parse_args():
         default=False,
         help="generate constrasting question pairs",
     )
-    parser.add_argument("--embedding", type=bool, default=False, help="generate embeddings")
+    parser.add_argument(
+        "--embedding", type=bool, default=False, help="generate embeddings"
+    )
     return parser.parse_args()
 
 

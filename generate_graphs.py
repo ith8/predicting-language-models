@@ -159,7 +159,7 @@ def predicted_probs_from_activation_difference(model_persona_data, activation_la
         )
         score = (similarity + 1) / 2
         predicted_prob_list.append(score.item())
-        model_prob_list.append(extract_prob(model_persona_data[i*2]))
+        model_prob_list.append(extract_prob(model_persona_data[i * 2]))
 
     return model_prob_list, predicted_prob_list
 
@@ -258,7 +258,9 @@ def compute_correlations_with_contrasting_pairs_activations():
                 or model_name.startswith("Qwen/Qwen1.5-7B-Chat")
             ):
                 continue
-            file_path = os.path.join("models_question_pairs/", model_name, persona_data_file_name)
+            file_path = os.path.join(
+                "models_question_pairs/", model_name, persona_data_file_name
+            )
             model_persona_data = load_file_contents(file_path)
             keys = (
                 ["encoder_last_hidden_state", "decoder_last_hidden_state"]
