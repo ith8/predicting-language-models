@@ -130,6 +130,95 @@
                         src="static/images/n_sample_averages/average-across-persona_heatmap.png"
                         alt="Correlation with past response">
                 </div>
+                <h2 id="correlations-from-activations">Predicting response from
+                    model activations</h2>
+
+                <h3>Difference in activations between corresponding pairs
+                    of
+                    yes/no statement </h3>
+                <p> This method first creates two version of a question where
+                    the expected answer_matching_behavior is yes in one and no
+                    in the other. The pairs of prompt would be
+                    "Do you agree with the following statement? STATEMENT" and
+                    "Do you disagree with the following statement? STATEMENT". I
+                    computed the difference between the activations of yes and
+                    no expected behavior for each pairs, then take the average
+                    of all the differences in activations. To make a prediction,
+                    I compute the cosign similarity between model activation on
+                    the input I want to predict and the mean activation vector.
+                </p>
+                <div class="gallery2">
+                    <img
+                        src="static/images/contrasting_pairs_activation_correlations/average-across-persona_heatmap.png"
+                        alt="Correlation between models">
+                    <img
+                        src="static/images/contrasting_pairs_activation_correlations/agreeableness_heatmap.png"
+                        alt="Agreeableness Heatmap">
+                    <img
+                        src="static/images/contrasting_pairs_activation_correlations/anti-immigration_heatmap.png"
+                        alt="Anti-Immigration Heatmap">
+                    <img
+                        src="static/images/contrasting_pairs_activation_correlations/no-goal-change_heatmap.png"
+                        alt="No-Goal-Change Heatmap">
+                    <img
+                        src="static/images/contrasting_pairs_activation_correlations/openness_heatmap.png"
+                        alt="Openness Heatmap">
+                    <img
+                        src="static/images/contrasting_pairs_activation_correlations/politically-conservative_heatmap.png"
+                        alt="Politically Conservative Heatmap">
+                    <img
+                        src="static/images/contrasting_pairs_activation_correlations/politically-liberal_heatmap.png"
+                        alt="Politically Liberal Heatmap">
+                    <img
+                        src="static/images/contrasting_pairs_activation_correlations/risk-averse_heatmap.png"
+                        alt="Risk Averse Heatmap">
+                    <img
+                        src="static/images/contrasting_pairs_activation_correlations/risk-seeking_heatmap.png"
+                        alt="Risk Seeking Heatmap">
+                    <img
+                        src="static/images/contrasting_pairs_activation_correlations/self-replication_heatmap.png"
+                        alt="Self-Replication Heatmap">
+                </div>
+                <h3>Computing cosign similarity with the average activations
+                    directly</h3>
+                <p> Instead of creating constrasting pairs of questions, I
+                    compute the cosign similarity between the activations of the
+                    input I want to predict and the average activation vector
+                    (where answer_matching_behavior is the same as the input).
+                </p>
+                <div class="gallery2">
+                    <img
+                        src="static/images/activation_correlations/average-across-persona_heatmap.png"
+                        alt="Correlation between models">
+                    <img
+                        src="static/images/activation_correlations/agreeableness_heatmap.png"
+                        alt="Agreeableness Heatmap">
+                    <img
+                        src="static/images/activation_correlations/anti-immigration_heatmap.png"
+                        alt="Anti-Immigration Heatmap">
+                    <img
+                        src="static/images/activation_correlations/no-goal-change_heatmap.png"
+                        alt="No-Goal-Change Heatmap">
+                    <img
+                        src="static/images/activation_correlations/openness_heatmap.png"
+                        alt="Openness Heatmap">
+                    <img
+                        src="static/images/activation_correlations/politically-conservative_heatmap.png"
+                        alt="Politically Conservative Heatmap">
+                    <img
+                        src="static/images/activation_correlations/politically-liberal_heatmap.png"
+                        alt="Politically Liberal Heatmap">
+                    <img
+                        src="static/images/activation_correlations/risk-averse_heatmap.png"
+                        alt="Risk Averse Heatmap">
+                    <img
+                        src="static/images/activation_correlations/risk-seeking_heatmap.png"
+                        alt="Risk Seeking Heatmap">
+                    <img
+                        src="static/images/activation_correlations/self-replication_heatmap.png"
+                        alt="Self-Replication Heatmap">
+                </div>
+
                 <h2>Individual persona results</h2>
                 <h3 id="model-pairs-individual-persona">Correlation between
                     model pairs</h3>
