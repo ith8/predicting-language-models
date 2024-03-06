@@ -2,7 +2,6 @@ from flask import Flask, render_template, jsonify, request
 import os
 import json
 
-from generate_graphs import list_directories
 
 app = Flask(
     __name__,
@@ -65,6 +64,19 @@ def get_file_content(model, filename):
 
         return jsonify(content)
     return jsonify({"error": "File not found"}), 404
+
+def list_directories(path):
+    dirs = []
+    jsonl_files = set()
+    for root, subdirs, files in os.walk(path):
+        for subdir in subdirs:
+            if subdir not in ["google", "Qwen"]:
+                dirs.append(os.path.relpath(os.path.join(root, subdir), start=path))
+
+        for file in files:
+            if file.endswith(".jsonl"):
+                jsonl_files.add(file)
+    return dirs, jsonl_files
 
 
 if __name__ == "__main__":
