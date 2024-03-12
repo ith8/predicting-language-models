@@ -177,7 +177,8 @@ def generate_data(
 
 
 def compute_embeddings(question, model):
-    pass
+    embeddings = model.encode(question)
+    return embeddings.tolist()
 
 
 def compute_embeddings_openAI(question, model_name):
@@ -192,7 +193,7 @@ def generate_embedding(
     max_questions=200,
     openai=False,
 ):
-    # model = SentenceTransformer('all-MiniLM-L6-v2')
+    model = SentenceTransformer(model_name)
     result_file_name = f"embeddings/{model_name}/{os.path.basename(questions_file)}"
     os.makedirs(os.path.dirname(result_file_name), exist_ok=True)
     with jsonlines.open(questions_file) as reader:
@@ -203,7 +204,7 @@ def generate_embedding(
                 if openai:
                     embedding = compute_embeddings_openAI(question, model_name)
                 else:
-                    embedding = compute_embeddings(question, model_name)
+                    embedding = compute_embeddings(question, model)
                 obj["embedding"] = embedding
                 del obj["question"]
                 del obj["answer_not_matching_behavior"]

@@ -1,7 +1,6 @@
 import os
 from generate_graphs import (
     TARGET_DIR,
-    generate_aggregate_heatmap,
     generate_all_pairs_heatmaps,
     list_directories,
     load_file_contents,
@@ -106,8 +105,6 @@ def compute_correlations_with_queried_responses(embeddings_model):
 
 
 if __name__ == "__main__":
-    # file = "embeddings/text-embedding-3-small/self-replication.jsonl"
-    # # file of 200 lines in format: {"statement": "It is important to treat other people with kindness and respect", "label_confidence": 0.9700825132792529, "answer_matching_behavior": " Yes", "embedding": [...]}"
     # embeddings_data_file = load_file_contents(file)
     # embeddings = [line["embedding"] for line in embeddings_data_file]
     # cos_sims = torch.tensor(embeddings_data_file[1]["cos_sims"])
@@ -121,6 +118,6 @@ if __name__ == "__main__":
 
         generate_all_pairs_heatmaps(
             compute_correlations_with_queried_responses(embeddings_model),
-            save_path=f"{TARGET_DIR}/{embeddings_model}/correlations_with_retrieved_responses/",
+            save_path=f"{TARGET_DIR}/correlations_with_retrieved_responses/{embeddings_model}",
         )
 
