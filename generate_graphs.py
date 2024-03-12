@@ -284,6 +284,7 @@ def generate_all_pairs_heatmaps(all_correlations, save_path):
     for persona_data_file_name, correlations in all_correlations.items():
         persona = persona_data_file_name.replace(".jsonl", "")
         plot_heatmap(correlations, persona, save_path)
+    generate_aggregate_heatmap(all_correlations, save_path)
 
 
 def generate_aggregate_heatmap(all_correlations, save_path):
@@ -337,7 +338,7 @@ def plot_heatmap(correlations, persona, save_path):
     plt.yticks(rotation=35)
     plt.title(persona, fontsize=25, fontweight="bold", pad=30)
 
-    file_path = os.path.join(save_path, f"{persona}_heatmap.png")
+    file_path = os.path.join(save_path, f"{persona.split(',')[0]}_heatmap.png")
     plt.savefig(file_path)
     plt.close()
 
@@ -419,22 +420,13 @@ if __name__ == "__main__":
     # generate_all_pairs_heatmaps(
     #     compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
     # )
-    # generate_aggregate_heatmap(
-    #     compute_all_pairs_correlations(), save_path=f"{TARGET_DIR}/all_pairs/"
-    # )
+
     # generate_all_pairs_heatmaps(
     #     compute_correlations_with_prediction_from_activations(),
     #     save_path=f"{TARGET_DIR}/activation_correlations/",
     # )
-    # generate_aggregate_heatmap(
-    #     compute_correlations_with_prediction_from_activations(),
-    #     save_path=f"{TARGET_DIR}/activation_correlations/",
-    # )
+
     generate_all_pairs_heatmaps(
-        compute_correlations_with_contrasting_pairs_activations(),
-        save_path=f"{TARGET_DIR}/contrasting_pairs_activation_correlations/",
-    )
-    generate_aggregate_heatmap(
         compute_correlations_with_contrasting_pairs_activations(),
         save_path=f"{TARGET_DIR}/contrasting_pairs_activation_correlations/",
     )
@@ -443,7 +435,4 @@ if __name__ == "__main__":
     #     compute_correlations_with_sampled_responses(),
     #     save_path=f"{TARGET_DIR}/n_sample_averages/",
     # )
-    # generate_aggregate_heatmap(
-    #     compute_correlations_with_sampled_responses(),
-    #     save_path=f"{TARGET_DIR}/n_sample_averages/",
-    # )
+
