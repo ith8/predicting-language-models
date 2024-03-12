@@ -96,7 +96,7 @@ def compute_correlations_with_queried_responses(embeddings_model):
                     model_probs_list, avg_probs_list
                 )
         mean_similarity = round(mean_similarity.item(), 3)
-        
+
         persona_correlations[
             f"{persona_data_file_name}, mean similarity {mean_similarity}"
         ] = correlations
@@ -120,4 +120,3 @@ if __name__ == "__main__":
             compute_correlations_with_queried_responses(embeddings_model),
             save_path=f"{TARGET_DIR}/correlations_with_retrieved_responses/{embeddings_model}",
         )
-

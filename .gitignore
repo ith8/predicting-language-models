@@ -1,5 +1,8 @@
 evals/
 venv/
 models-test/
-*.pyc
+__pycache__/
+.pytest_cache/
+models_question_pairs/
+models_activations/
 nohup.out
