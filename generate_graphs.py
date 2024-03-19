@@ -224,12 +224,7 @@ def compute_correlations_with_prediction_from_activations():
                 continue
             file_path = os.path.join("models/", model_name, persona_data_file_name)
             model_persona_data = load_file_contents(file_path)
-            keys = (
-                ["encoder_last_hidden_state", "decoder_last_hidden_state"]
-                if model_name.startswith("google")
-                else ["embedding_hidden_state", "last_hidden_state"]
-            )
-            for hidden_layer in keys:
+            for hidden_layer in model_persona_data[0]["activations"].keys():
                 model_probs_list, predicted_probs_list = (
                     predicted_probs_from_activation(model_persona_data, hidden_layer)
                 )
@@ -256,12 +251,7 @@ def compute_correlations_with_contrasting_pairs_activations():
                 "models_question_pairs/", model_name, persona_data_file_name
             )
             model_persona_data = load_file_contents(file_path)
-            keys = (
-                ["encoder_last_hidden_state", "decoder_last_hidden_state"]
-                if model_name.startswith("google")
-                else ["embedding_hidden_state", "last_hidden_state"]
-            )
-            for hidden_layer in keys:
+            for hidden_layer in model_persona_data[0]["activations"].keys():
                 model_probs_list, predicted_probs_list = (
                     predicted_probs_from_activation_difference(
                         model_persona_data, hidden_layer
