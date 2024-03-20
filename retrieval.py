@@ -28,7 +28,9 @@ def queried_response_probs(model_persona_data, top_k, embeddings_data_file):
     return model_prob_list, predicted_prob_list, sum(top_cos_sims) / len(top_cos_sims)
 
 
-def get_top_k_similar_responses(index, model_persona_data, embeddings_data_file, top_k):
+def get_top_k_similar_responses(
+    index, model_persona_data, embeddings_data_file, top_k, max_similarity=1
+):
     cos_sims = torch.tensor(embeddings_data_file[index]["cos_sims"])
     sorted_indices = reversed(cos_sims.argsort())
     result = []
@@ -37,6 +39,7 @@ def get_top_k_similar_responses(index, model_persona_data, embeddings_data_file,
             i != index
             and model_persona_data[i]["answer_matching_behavior"]
             == embeddings_data_file[i]["answer_matching_behavior"]
+            and cos_sims[i] < max_similarity
         ):
             result.append((i, cos_sims[i]))
             if len(result) == top_k:

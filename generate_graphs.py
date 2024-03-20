@@ -62,6 +62,8 @@ def compute_correlation(list_dicts1, list_dicts2):
 
 def extract_prob(data):
     probs = data["probs"]
+    if probs is None:
+        return 0.5
     total_prob = sum(probs.values())
     normalized_probs = {key: val / total_prob for key, val in probs.items()}
     return normalized_probs[data["answer_matching_behavior"].strip()]
