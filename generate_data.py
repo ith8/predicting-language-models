@@ -70,9 +70,6 @@ def compute_logits(question, model, tokenizer, t5=False):
                 outputs.encoder_last_hidden_state.squeeze(0)[-1].tolist()
             )
 
-            activations["decoder_last_layer"] = (
-                outputs.decoder_hidden_states[-1].squeeze(0).mean(dim=0).tolist()
-            )
         else:
             outputs = model(input_ids, output_hidden_states=True)
             activations["last_layer"] = (
@@ -121,94 +118,6 @@ def compute_logits(question, model, tokenizer, t5=False):
     return probs_list, activations
 
 
-def record_activations(question, model, tokenizer, t5=False):
-    activations_pairs = defaultdict(dict)
-
-    with torch.no_grad():
-        for answer in ["Yes", "No"]:
-            input_text = question + "\n" + answer
-            input_ids = tokenizer(input_text, return_tensors="pt").input_ids
-            if t5:
-                decoder_start_token = tokenizer.pad_token_id
-                decoder_input_ids = torch.tensor([[decoder_start_token]])
-                outputs = model(
-                    input_ids,
-                    output_hidden_states=True,
-                    decoder_input_ids=decoder_input_ids,
-                )
-                # with last token
-                activations_pairs[answer]["encoder_last_layer"] = (
-                    outputs.encoder_last_hidden_state.squeeze(0).mean(dim=0)
-                )
-                encoder_middle_layer = len(outputs.encoder_hidden_states) // 2
-                activations_pairs[answer]["encoder_middle_layer"] = (
-                    outputs.encoder_hidden_states[encoder_middle_layer]
-                    .squeeze(0)
-                    .mean(dim=0)
-                )
-                # without last token
-                activations_pairs[answer]["encoder_last_layer_without_last_token"] = (
-                    outputs.encoder_last_hidden_state.squeeze(0)[:-1].mean(dim=0)
-                )
-                activations_pairs[answer]["encoder_middle_layer_without_last_token"] = (
-                    outputs.encoder_hidden_states[encoder_middle_layer]
-                    .squeeze(0)[:-1]
-                    .mean(dim=0)
-                )
-
-                # next to last token
-                activations_pairs[answer]["encoder_last_layer_next_to_last_token"] = (
-                    outputs.encoder_last_hidden_state.squeeze(0)[-2]
-                )
-                activations_pairs[answer]["encoder_middle_layer_next_to_last_token"] = (
-                    outputs.encoder_hidden_states[encoder_middle_layer].squeeze(0)[-2]
-                )
-
-            else:
-                outputs = model(input_ids, output_hidden_states=True)
-                activations_pairs[answer]["last_layer"] = (
-                    outputs.hidden_states[-1].squeeze(0).mean(dim=0)
-                )
-                middel_hidden_state = len(outputs.hidden_states) // 2
-                activations_pairs[answer]["middle_layer"] = (
-                    outputs.hidden_states[middel_hidden_state].squeeze(0).mean(dim=0)
-                )
-                activations_pairs[answer]["embedding_layer"] = (
-                    outputs.hidden_states[0].squeeze(0).mean(dim=0)
-                )
-
-                # without last token
-                activations_pairs[answer]["last_layer_without_last_token"] = (
-                    outputs.hidden_states[-1].squeeze(0)[:-1].mean(dim=0)
-                )
-                activations_pairs[answer]["middle_layer_without_last_token"] = (
-                    outputs.hidden_states[middel_hidden_state]
-                    .squeeze(0)[:-1]
-                    .mean(dim=0)
-                )
-                activations_pairs[answer]["embedding_layer_without_last_token"] = (
-                    outputs.hidden_states[0].squeeze(0).mean(dim=0)[:-1]
-                )
-
-                # next to last token
-                activations_pairs[answer]["last_layer_next_to_last_token"] = (
-                    outputs.hidden_states[-1].squeeze(0)[-2]
-                )
-                activations_pairs[answer]["middle_layer_next_to_last_token"] = (
-                    outputs.hidden_states[middel_hidden_state].squeeze(0)[-2]
-                )
-                activations_pairs[answer]["embedding_layer_next_to_last_token"] = (
-                    outputs.hidden_states[0].squeeze(0)[-2]
-                )
-
-    activations = {}
-    for key in activations_pairs["Yes"]:
-        activations[key] = (
-            activations_pairs["Yes"][key] - activations_pairs["No"][key]
-        ).tolist()
-    return activations
-
-
 def compute_logits_openaiAPI(question, model_name):
     probs_list = {}
     client = openai.OpenAI()
@@ -244,29 +153,19 @@ def generate_data(
     max_questions=200,
     t5=False,
     openai=False,
-    question_pairs=False,
 ):
     if t5:
         model, tokenizer = load_t5_model_and_tokenizer(model_name)
     elif not openai:
         model, tokenizer = load_model_and_tokenizer(model_name)
 
-    if question_pairs:
-        result_file_name = (
-            f"models_question_pairs/{model_name}/{os.path.basename(questions_file)}"
-        )
-    else:
-        result_file_name = f"models/{model_name}/{os.path.basename(questions_file)}"
+    result_file_name = f"models/{model_name}/{os.path.basename(questions_file)}"
     os.makedirs(os.path.dirname(result_file_name), exist_ok=True)
     with jsonlines.open(questions_file) as reader:
         with jsonlines.open(result_file_name, mode="w") as writer:
             for obj in list(reader)[:max_questions]:
-                statement = obj["statement"]
-                if question_pairs:
-                    question = "Do you agree with the following statement? " + statement
-                    obj["statement"] = question
-                else:
-                    question = obj["question"]
+
+                question = obj["question"]
                 print(question)
                 if not t5:
                     question = "Answer with either yes or no only: " + question
@@ -279,57 +178,8 @@ def generate_data(
                     obj["activations"] = activations
 
                 del obj["question"]
-                answer_not_matching_behavior = obj["answer_not_matching_behavior"]
                 del obj["answer_not_matching_behavior"]
                 obj["probs"] = probs
-                writer.write(obj)
-
-                if question_pairs:
-                    question = (
-                        "Do you disagree with the following statement? " + statement
-                    )
-                    obj["statement"] = question
-                    print(question)
-                    if not t5:
-                        question = "Answer with either yes or no only: " + question
-                    probs, activations = compute_logits(
-                        question, model, tokenizer, t5=t5
-                    )
-                    obj["activations"] = activations
-                    obj["probs"] = probs
-                    obj["answer_matching_behavior"] = answer_not_matching_behavior
-                    writer.write(obj)
-
-
-def generate_activations(
-    model_name,
-    questions_file,
-    max_questions=200,
-    t5=False,
-):
-    if t5:
-        model, tokenizer = load_t5_model_and_tokenizer(model_name)
-    else:
-        model, tokenizer = load_model_and_tokenizer(model_name)
-
-    result_file_name = (
-        f"models_activations/{model_name}/{os.path.basename(questions_file)}"
-    )
-    os.makedirs(os.path.dirname(result_file_name), exist_ok=True)
-    with jsonlines.open(questions_file) as reader:
-        with jsonlines.open(result_file_name, mode="w") as writer:
-            for obj in list(reader)[:max_questions]:
-                question = obj["question"]
-                print(question)
-                if not t5:
-                    question = "Answer with either yes or no only: " + question
-
-                activations = record_activations(question, model, tokenizer, t5=t5)
-                obj["activations"] = activations
-
-                del obj["question"]
-                del obj["answer_not_matching_behavior"]
-
                 writer.write(obj)
 
 
@@ -377,12 +227,6 @@ def parse_args():
     parser.add_argument("--all", type=bool, default=False, help="all personas")
     parser.add_argument("--openai", type=bool, default=False, help="openai model")
     parser.add_argument(
-        "--question_pairs",
-        type=bool,
-        default=False,
-        help="generate constrasting question pairs",
-    )
-    parser.add_argument(
         "--embedding", type=bool, default=False, help="generate embeddings"
     )
     parser.add_argument(
@@ -410,23 +254,6 @@ if __name__ == "__main__":
                 args.max_questions,
                 args.openai,
             )
-    elif args.activations:
-        if args.all:
-            _, jsonl_files = list_directories("models/")
-            for jsonl_file in jsonl_files:
-                generate_activations(
-                    args.model_name,
-                    os.path.join("evals/persona", jsonl_file),
-                    args.max_questions,
-                    args.t5,
-                )
-        else:
-            generate_activations(
-                args.model_name,
-                args.questions_file,
-                args.max_questions,
-                args.t5,
-            )
     else:
         if args.all:
             _, jsonl_files = list_directories("models/")
@@ -437,7 +264,6 @@ if __name__ == "__main__":
                     args.max_questions,
                     args.t5,
                     args.openai,
-                    args.question_pairs,
                 )
         else:
             generate_data(
@@ -446,5 +272,4 @@ if __name__ == "__main__":
                 args.max_questions,
                 args.t5,
                 args.openai,
-                args.question_pairs,
             )
