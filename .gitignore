@@ -3,6 +3,5 @@ venv/
 models-test/
 __pycache__/
 .pytest_cache/
-models_question_pairs/
-models_activations/
+models_*/
 nohup.out
