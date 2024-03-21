@@ -65,14 +65,14 @@ def compute_cos_sims(embeddings_data):
 
 
 def add_cos_sims_to_file():
-    model_dirs, jsonl_files = list_directories("models/")
+    model_dirs, jsonl_files = list_directories("models_hitler/")
 
     for embeddings_data_file_name in jsonl_files:
         for embeddings_model_name in model_dirs:
             if "gpt" in embeddings_model_name:
                 continue
             file_path = os.path.join(
-                "models/", embeddings_model_name, embeddings_data_file_name
+                "models_hitler/", embeddings_model_name, embeddings_data_file_name
             )
             persona_embeddings_data = load_file_contents(file_path)
             persona_embeddings_data = compute_cos_sims(persona_embeddings_data)
@@ -82,7 +82,7 @@ def add_cos_sims_to_file():
 
 
 def compute_correlations_with_queried_responses():
-    model_dirs, jsonl_files = list_directories("models/")
+    model_dirs, jsonl_files = list_directories("models_hitler/")
     persona_correlations = {}
 
     for persona_data_file_name in jsonl_files:
@@ -91,7 +91,9 @@ def compute_correlations_with_queried_responses():
         for model_name in model_dirs:
             if "gpt" in model_name:
                 continue
-            file_path = os.path.join("models/", model_name, persona_data_file_name)
+            file_path = os.path.join(
+                "models_hitler/", model_name, persona_data_file_name
+            )
             model_persona_data = load_file_contents(file_path)
 
             for top_k in [1, 3, 5]:
@@ -113,9 +115,9 @@ def compute_correlations_with_queried_responses():
 
 
 if __name__ == "__main__":
-    # add_cos_sims_to_file()
+    add_cos_sims_to_file()
 
     generate_all_pairs_heatmaps(
         compute_correlations_with_queried_responses(),
-        save_path=f"{TARGET_DIR}/correlations_with_retrieved_responses_from_activation/",
+        save_path=f"{TARGET_DIR}/hitler/correlations_with_retrieved_responses_from_activation/",
     )
