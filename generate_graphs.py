@@ -314,7 +314,7 @@ def plot_persona_results(base_path="models/"):
         "flan-t5-xxl": "darkviolet",
         "Qwen1.5-1.8B-Chat": "lightgreen",
         "Qwen1.5-7B-Chat": "green",
-        "Qwen1.5-14B-Chat": "darkgreen",
+        "Qwen1.5-14B-Chat": "black",
         "gpt-3.5-turbo": "orange",
         "gpt-4-1106-preview": "red",
     }

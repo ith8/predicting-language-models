@@ -42,11 +42,10 @@ tr:nth-child(even) {
     }
 }
 
-
 body {
     font-family: 'Arial', sans-serif;
     font-size: 18px;
-    margin: 100px;
+    margin: 50px;
     padding: 20px;
     background-color: #f0f2f5;
     color: #333;
@@ -80,15 +79,15 @@ nav ul li a:hover {
     text-decoration: underline;
 }
 .container {
-    padding: 20px;
+    padding: 100px;
 }
 .gallery { display: flex; flex-wrap: wrap; padding: 5px; }
-.gallery img { margin: 5px; width: 800px; height: auto; } 
+.gallery img { margin: 5px; width: 650px; height: auto; } 
 div {
     word-wrap: break-word;
 }
 .gallery2 { display: flex; flex-wrap: wrap; padding: 5px; }
-.gallery2 img { margin: 5px; width: 700px; height: auto; } 
+.gallery2 img { margin: 5px; width: 500px; height: auto; } 
 div {
     word-wrap: break-word;
 }
