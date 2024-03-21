@@ -39,7 +39,7 @@ def get_top_k_similar_responses(
             i != index
             and model_persona_data[i]["answer_matching_behavior"]
             == embeddings_data_file[i]["answer_matching_behavior"]
-            and cos_sims[i] < max_similarity
+            and cos_sims[i] <= max_similarity
         ):
             result.append((i, cos_sims[i]))
             if len(result) == top_k:
@@ -63,11 +63,11 @@ def compute_cos_sims(embeddings_data):
 
 
 def add_cos_sims_to_file():
-    model_dirs, jsonl_files = list_directories("embeddings/")
+    model_dirs, jsonl_files = list_directories("embeddings_hitler/")
     for embeddings_data_file_name in jsonl_files:
         for embeddings_model_name in model_dirs:
             file_path = os.path.join(
-                "embeddings/", embeddings_model_name, embeddings_data_file_name
+                "embeddings_hitler/", embeddings_model_name, embeddings_data_file_name
             )
             persona_embeddings_data = load_file_contents(file_path)
             persona_embeddings_data = compute_cos_sims(persona_embeddings_data)
@@ -77,16 +77,18 @@ def add_cos_sims_to_file():
 
 
 def compute_correlations_with_queried_responses(embeddings_model):
-    model_dirs, jsonl_files = list_directories("models/")
+    model_dirs, jsonl_files = list_directories("models_hitler/")
     persona_correlations = {}
 
     for persona_data_file_name in jsonl_files:
         correlations = {}
         embeddings_data_file = load_file_contents(
-            os.path.join("embeddings/", embeddings_model, persona_data_file_name)
+            os.path.join("embeddings_hitler/", embeddings_model, persona_data_file_name)
         )
         for model_name in model_dirs:
-            file_path = os.path.join("models/", model_name, persona_data_file_name)
+            file_path = os.path.join(
+                "models_hitler/", model_name, persona_data_file_name
+            )
             model_persona_data = load_file_contents(file_path)
 
             for top_k in [1, 3, 5]:
@@ -108,11 +110,11 @@ def compute_correlations_with_queried_responses(embeddings_model):
 
 
 if __name__ == "__main__":
-    embedding_model_names, _ = list_directories("embeddings/")
+    embedding_model_names, _ = list_directories("embeddings_hitler/")
 
     for embeddings_model in embedding_model_names:
 
         generate_all_pairs_heatmaps(
             compute_correlations_with_queried_responses(embeddings_model),
-            save_path=f"{TARGET_DIR}/correlations_with_retrieved_responses/{embeddings_model}",
+            save_path=f"{TARGET_DIR}/correlations_with_retrieved_responses_hitler_embedding/{embeddings_model}",
         )
