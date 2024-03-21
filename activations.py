@@ -27,6 +27,8 @@ def predicted_probs_from_activation(
         activation_data, activation_layer_stored
     )
     for i, query_data in enumerate(model_persona_data):
+        if i % 2 == 0:
+            continue
         predicted_prob_list.append(
             compute_cosine_similarity(
                 average_activation_vectors, query_data, activation_layer_eval
@@ -88,7 +90,6 @@ def compute_correlations_with_prediction_from_activations():
                 activation_name = get_initials(hidden_layer_eval)
                 if model_name.startswith("Qwen"):
                     activation_name = "qwen " + activation_name
-                    print(predicted_probs_list[:5])
 
                 correlations[model_name.split("/")[-1], activation_name], _ = pearsonr(
                     model_probs_list, predicted_probs_list
@@ -101,5 +102,5 @@ def compute_correlations_with_prediction_from_activations():
 if __name__ == "__main__":
     generate_all_pairs_heatmaps(
         compute_correlations_with_prediction_from_activations(),
-        save_path=f"{TARGET_DIR}/activation_correlations/",
+        save_path=f"{TARGET_DIR}/activation_correlations_difference/",
     )
