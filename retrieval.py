@@ -64,15 +64,15 @@ def compute_cos_sims(embeddings_data):
 
 def add_cos_sims_to_file():
     model_dirs, jsonl_files = list_directories("embeddings/")
-    for persona_data_file_name in jsonl_files:
+    for embeddings_data_file_name in jsonl_files:
         for embeddings_model_name in model_dirs:
             file_path = os.path.join(
-                "embeddings/", embeddings_model_name, persona_data_file_name
+                "embeddings/", embeddings_model_name, embeddings_data_file_name
             )
-            model_persona_data = load_file_contents(file_path)
-            model_persona_data = compute_cos_sims(model_persona_data)
+            persona_embeddings_data = load_file_contents(file_path)
+            persona_embeddings_data = compute_cos_sims(persona_embeddings_data)
             with jsonlines.open(file_path, "w") as writer:
-                for line in model_persona_data:
+                for line in persona_embeddings_data:
                     writer.write(line)
 
 
@@ -108,13 +108,6 @@ def compute_correlations_with_queried_responses(embeddings_model):
 
 
 if __name__ == "__main__":
-    # embeddings_data_file = load_file_contents(file)
-    # embeddings = [line["embedding"] for line in embeddings_data_file]
-    # cos_sims = torch.tensor(embeddings_data_file[1]["cos_sims"])
-    # top_5_indices = cos_sims.argsort()[-5:]
-    # print(embeddings_data_file[1]["statement"])
-    # top_5_statement = [(embeddings_data_file[i]["statement"], cos_sims[i]) for i in top_5_indices]
-    # print(top_5_statement)
     embedding_model_names, _ = list_directories("embeddings/")
 
     for embeddings_model in embedding_model_names:

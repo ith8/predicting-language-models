@@ -10,8 +10,8 @@ import torch
 from sentence_transformers.util import cos_sim
 
 MODEL_ORDER = [
-    "gpt-3.5-turbo",
-    "gpt-4-1106-preview",
+    # "gpt-3.5-turbo",
+    # "gpt-4-1106-preview",
     "flan-t5-small",
     "flan-t5-large",
     "flan-t5-xl",
@@ -129,6 +129,8 @@ def predicted_probs_from_activation(model_persona_data, activation_layer):
         prediction_set, activation_layer
     )
     for i, query_data in enumerate(eval_set):
+        if i % 2 == 0:
+            continue
         predicted_prob_list.append(
             compute_cosine_similarity(
                 average_activation_vectors, query_data, activation_layer
@@ -200,7 +202,7 @@ def compute_correlations_with_prediction_from_activations():
             file_path = os.path.join("models/", model_name, persona_data_file_name)
             model_persona_data = load_file_contents(file_path)
             for hidden_layer in model_persona_data[0]["activations"].keys():
-                if hidden_layer == "embedding_layer_last_token":
+                if "last_token" in hidden_layer:
                     continue
                 model_probs_list, predicted_probs_list = (
                     predicted_probs_from_activation(model_persona_data, hidden_layer)

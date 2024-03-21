@@ -43,58 +43,19 @@ def compute_logits(question, model, tokenizer, t5=False):
                 output_hidden_states=True,
                 decoder_input_ids=decoder_input_ids,
             )
-            activations["embedding_layer"] = (
-                outputs.encoder_hidden_states[0].squeeze(0).mean(dim=0).tolist()
-            )
-            activations["embedding_layer_last_token"] = (
-                outputs.encoder_hidden_states[0].squeeze(0)[-1].tolist()
-            )
-
-            encoder_middle_layer = len(outputs.encoder_hidden_states) // 2
-            activations["encoder_middle_layer"] = (
-                outputs.encoder_hidden_states[encoder_middle_layer]
-                .squeeze(0)
-                .mean(dim=0)
-                .tolist()
-            )
-            activations["encoder_middle_layer_last_token"] = (
-                outputs.encoder_hidden_states[encoder_middle_layer]
-                .squeeze(0)[-1]
-                .tolist()
-            )
-
-            activations["encoder_last_layer"] = (
-                outputs.encoder_last_hidden_state.squeeze(0).mean(dim=0).tolist()
-            )
-            activations["encoder_last_layer_last_token"] = (
-                outputs.encoder_last_hidden_state.squeeze(0)[-1].tolist()
-            )
+            print(len(outputs.encoder_hidden_states))
+            for i in range(len(outputs.encoder_hidden_states)):
+                activations[f"{i}_encoder_layer"] = (
+                    outputs.encoder_hidden_states[i].squeeze(0).mean(dim=0).tolist()
+                )
 
         else:
             outputs = model(input_ids, output_hidden_states=True)
-            activations["last_layer"] = (
-                outputs.hidden_states[-1].squeeze(0).mean(dim=0).tolist()
-            )
-            middel_hidden_state = len(outputs.hidden_states) // 2
-            activations["middle_layer"] = (
-                outputs.hidden_states[middel_hidden_state]
-                .squeeze(0)
-                .mean(dim=0)
-                .tolist()
-            )
-            activations["embedding_layer"] = (
-                outputs.hidden_states[0].squeeze(0).mean(dim=0).tolist()
-            )
-
-            activations["last_layer_last_token"] = (
-                outputs.hidden_states[-1].squeeze(0)[-1].tolist()
-            )
-            activations["middle_layer_last_token"] = (
-                outputs.hidden_states[middel_hidden_state].squeeze(0)[-1].tolist()
-            )
-            activations["embedding_layer_last_token"] = (
-                outputs.hidden_states[0].squeeze(0)[-1].tolist()
-            )
+            print(len(outputs.hidden_states))
+            for i in range(len(outputs.hidden_states)):
+                activations[f"{i}_layer"] = (
+                    outputs.hidden_states[i].squeeze(0).mean(dim=0).tolist()
+                )
 
         logits = outputs.logits
 
@@ -200,7 +161,6 @@ def generate_embedding(
     max_questions=200,
     openai=False,
 ):
-    model = SentenceTransformer(model_name)
     result_file_name = f"embeddings/{model_name}/{os.path.basename(questions_file)}"
     os.makedirs(os.path.dirname(result_file_name), exist_ok=True)
     with jsonlines.open(questions_file) as reader:
@@ -211,6 +171,7 @@ def generate_embedding(
                 if openai:
                     embedding = compute_embeddings_openAI(question, model_name)
                 else:
+                    model = SentenceTransformer(model_name)
                     embedding = compute_embeddings(question, model)
                 obj["embedding"] = embedding
                 del obj["question"]
