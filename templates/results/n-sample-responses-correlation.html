@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Homepage</title>
+        <link rel="stylesheet"
+            href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <header>
+            <h1>Predicting Language Models</h1>
+        </header>
+        <nav>
+            <ul>
+                <li><a href="/">Homepage</a></li>
+            </ul>
+        </nav>
+        <div class="container">
+
+            <body>
+
+                <h2>Individual persona results</h2>
+
+                <h3 id="sampled-response-individual-persona">Correlation between
+                    model with random sampled response</h3>
+                <div class="gallery2">
+                    <img
+                        src="../static/images/n_sample_averages/agreeableness_heatmap.png"
+                        alt="Agreeableness Heatmap N Sample">
+                    <img
+                        src="../static/images/n_sample_averages/anti-immigration_heatmap.png"
+                        alt="Anti-Immigration Heatmap N Sample">
+                    <img
+                        src="../static/images/n_sample_averages/no-goal-change_heatmap.png"
+                        alt="No-Goal-Change Heatmap N Sample">
+                    <img
+                        src="../static/images/n_sample_averages/openness_heatmap.png"
+                        alt="Openness Heatmap N Sample">
+                    <img
+                        src="../static/images/n_sample_averages/politically-conservative_heatmap.png"
+                        alt="Politically Conservative Heatmap N Sample">
+                    <img
+                        src="../static/images/n_sample_averages/politically-liberal_heatmap.png"
+                        alt="Politically Liberal Heatmap N Sample">
+                    <img
+                        src="../static/images/n_sample_averages/risk-averse_heatmap.png"
+                        alt="Risk Averse Heatmap N Sample">
+                    <img
+                        src="../static/images/n_sample_averages/risk-seeking_heatmap.png"
+                        alt="Risk Seeking Heatmap N Sample">
+                    <img
+                        src="../static/images/n_sample_averages/self-replication_heatmap.png"
+                        alt="Self-Replication Heatmap N Sample">
+                    <img
+                        src="../static/images/n_sample_averages/average-across-persona_heatmap.png"
+                        alt="Correlation with past response">
+                </div>
+
+            </body>
+        </div>
+    </body>
+</html>

@@ -24,6 +24,11 @@ def raw_data():
     return render_template("raw_data.html")
 
 
+@app.route("/results/<page>")
+def results(page):
+    return render_template(f"results/{page}.html")
+
+
 @app.route("/models")
 def get_models():
     models, _ = list_directories(MODELS_PATH)
@@ -57,6 +62,8 @@ def get_file_content(model, filename):
                     del json_line["probs"]
                     if "activations" in json_line:
                         del json_line["activations"]
+                    if "cos_sims" in json_line:
+                        del json_line["cos_sims"]
 
                     content.append(json_line)
                 except json.JSONDecodeError as e:
