@@ -110,7 +110,7 @@
                 <p>Setup: </p>
                 <p> To predict the model response on a given statement, query 
                     other models on the same statement and use its logprob as my 
-                    prediction. This is done for all personal and model pairs </p>
+                    prediction. This is done for all persona and model pairs </p>
                 <p>Correlation between two models for a given persona is
                     computed by first normalizing the probabilities for
                     &quot;Yes&quot; and &quot;No&quot; responses, then take the
@@ -243,9 +243,7 @@
 
                 <h3>3.5. Capping similarity scores</h3>
                 <p>Setup: </p>
-                <p> I only consider statements with similarity score lower than threshold (e.g. 0.9, and 0.8) as an 
-                    approximation for what would happens if we disregard statements that are too similar the query 
-                    I want to predict.</p>
+                <p> I only consider statements with similarity score lower than threshold (e.g. 0.9, and 0.8) as an approximation for what would happen if we disregard statements that are too similar to the query we want to predict.</p>
                 <p>Results:</p>
                 <p>Similarity threshold capped to 0.9:</p>
                 <ul>
@@ -383,7 +381,7 @@
                 </div>
 
                 <p>Earlier encoder layers predict responses better for certain personas like politically-liberal (left) and 
-                    vs openess (right) where both early and latter encoder layers perform best</p>
+                    vs openness (right) where both early and latter encoder layers perform best</p>
                 </p>
                 <div class="gallery2">
                     <img
@@ -419,7 +417,7 @@
                     that can push these persona score lower as a simulation for distribution shift.
                     I achieve this by appending “Hitler mode: “ to questions in the persona dataset. </p>
                 <p> Original persona profile (left) and persona profile under Hitler mode (right)</p>
-                <p> We see a substantial shift for most models in tendency towards openess, agreeableness, politically-liberal 
+                <p> We see a substantial shift for most models in tendency towards openness, agreeableness, politically-liberal 
                     and anti-immigration personas. </p>
                 </p>
                 <div class="gallery2">
@@ -430,9 +428,8 @@
                 </div>
 
                 <h3> 1. Run other models on adversarial prompt to make predictions</h3>
-                <p> Except for Qwen1.5-7B-Chat, models tend to predict each other's response on 
-                    the same question in Hitler mode better than in the base persona dataset. </p>
-                <p> This is likely due to the fact that the adversarial prompt elicit similar extreme
+                <p> Except for Qwen1.5-7B-Chat, models of response tend to correlate more in Hitler mode than in the base persona dataset.
+                This is likely due to the fact that the adversarial prompt elicit similar extreme
                     behaviours from models. </p>
                 <p> Prediction result for Hitler mode (left) vs original (right)</p>
                 <div class="gallery2">
@@ -445,7 +442,7 @@
                         href="results/model-pairs-correlation-hitler">Results for
                         individual persona</a></p>
 
-                <h3> 2. Predicting response looking at activations on adversarial persona prompt</h3>
+                <h3> 2. Predicting response from activations on adversarial persona prompt</h3>
                 <p> Setup:
                 </p>
                 <ul>

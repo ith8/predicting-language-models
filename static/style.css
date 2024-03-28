@@ -82,12 +82,12 @@ nav ul li a:hover {
     padding: 100px;
 }
 .gallery { display: flex; flex-wrap: wrap; padding: 5px; }
-.gallery img { margin: 5px; width: 650px; height: auto; } 
+.gallery img { margin: 5px; width: 500px; height: auto; } 
 div {
     word-wrap: break-word;
 }
 .gallery2 { display: flex; flex-wrap: wrap; padding: 5px; }
-.gallery2 img { margin: 5px; width: 500px; height: auto; } 
+.gallery2 img { margin: 5px; width: 400px; height: auto; } 
 div {
     word-wrap: break-word;
 }
